@@ -226,14 +226,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
-            android:layout_marginTop="-7dp"
+            android:layout_marginTop="-3dp"
             android:paddingTop="0dp"
             android:paddingBottom="0dp"
             android:text="Open Loop"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textStyle="bold"
-            android:textSize="20dp"
-            android:visibility="gone"
+            android:textSize="14dp"
+            android:visibility="visible"
             tools:ignore="HardcodedText" />
 
         <TextView
