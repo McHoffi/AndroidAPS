@@ -264,12 +264,12 @@ class DetermineBasalSMB @Inject constructor(
         val activity_scale_factor = preferences.get(DoubleKey.ActivityScaleFactor)
         val inactivity_scale_factor = preferences.get(DoubleKey.InactivityScaleFactor)
 
-        if ( !activityDetection ) {
-            consoleError.add("Activity monitor disabled in the settings")
+        if ( !activityDetection!!) {
+            consoleError.add("Activity detection disabled in the settings. ")
         } else if ( profile.temptargetSet) {
-            consoleError.add("Activity monitor disabled: tempTarget")
-        } else if (!phoneMoved) {
-            consoleError.add("Activity monitor disabled: Phone seems not to be carried for the last 15 m")
+            consoleError.add("Activity detection disabled: tempTarget. ")
+        } else if (!phoneMoved!!) {
+            consoleError.add("Activity detection disabled: Phone seems not to be carried for the last 15 m. ")
         } else {
             consoleError.add("0-5 m ago: $recentSteps5Minutes steps; ")
             consoleError.add("5-10 m ago: $recentSteps10Minutes steps; ")

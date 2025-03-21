@@ -680,8 +680,12 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             }
         }
         preferences.put(DoubleKey.ActivityMonitorRatio, activityRatio)
-        aapsLogger.debug(LTag.APS, "Activity Monitor found steps 5m:$recentSteps5Minutes, 10m:$recentSteps10Minutes, 15m:$recentSteps15Minutes, 30m:$recentSteps30Minutes, 60m:$recentSteps60Minutes, activityRatio:$activityRatio")
-        aapsLogger.debug(LTag.APS, "Activity Monitor used phoneMoved:$phoneMoved, lastAppStart:$lastAppStart, activityDetection:$activityDetection, ignoreSleep:$ignore_inactivity_overnight, sleepStart:$inactivity_idle_start, sleepEnd:$inactivity_idle_end")
+        var activityMsg = "Activity Monitor json: {\"activity_scale_factor\":$activity_scale_factor,\"inactivity_scale_factor\":$inactivity_scale_factor"
+        activityMsg += ",\"recentSteps5Minutes\":$recentSteps5Minutes,\"recentSteps10Minutes\":$recentSteps10Minutes,\"recentSteps15Minutes\":$recentSteps15Minutes"
+        activityMsg += ",\"recentSteps30Minutes\":$recentSteps30Minutes,\"recentSteps60Minutes\":$recentSteps60Minutes"
+        activityMsg += ",\"phone_moved\":$phoneMoved,\"time_since_start\":$lastAppStart,\"activity_detection\":$activityDetection"
+        activityMsg += ",\"ignore_inactivity_overnight\":$ignore_inactivity_overnight,\"inactivity_idle_start\":$inactivity_idle_start,\"inactivity_idle_end\":$inactivity_idle_end}"
+        aapsLogger.debug(LTag.APS, activityMsg)
         return activityRatio
     }
 
@@ -827,7 +831,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 liftISF = bg_ISF * acce_ISF                                 // bg_ISF could become > 1 now
                 consoleError.add("bg_ISF adaptation lifted to ${round(liftISF, 2)} as bg accelerates already")
             }
-            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, isTempTarget, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
+            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
             return min(720.0, round(sens / final_ISF, 1))         // observe ISF maximum of 720(?)
         } else if (bg_ISF > 1.0) {
             sens_modified = true
@@ -880,7 +884,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 consoleError.add("strongest autoISF factor ${round(liftISF, 2)} weakened to ${round(liftISF * acce_ISF, 2)} as bg decelerates already")
                 liftISF = liftISF * acce_ISF
             }
-            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, isTempTarget, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
+            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
             return round(sens / final_ISF, 1)
         }
         consoleError.add("----------------------------------")
@@ -956,7 +960,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     }
 
     fun withinISFlimits(
-        liftISF: Double, minISFReduction: Double, maxISFReduction: Double, sensitivityRatio: Double, origin_sens: String, temptargetSet: Boolean,
+        liftISF: Double, minISFReduction: Double, maxISFReduction: Double, sensitivityRatio: Double, origin_sens: String,
         exerciseModeActive: Boolean, resistanceModeActive: Boolean, stepActivityDetected:Boolean, stepInactivityDetected: Boolean
     ): Double {
         var liftISFlimited: Double = liftISF
@@ -969,22 +973,32 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         }
         var finalISF = 1.0
         var originSensFinal = origin_sens
-        if (exerciseModeActive) {
-            finalISF = liftISFlimited * sensitivityRatio
-            originSensFinal = "including exercise mode impact"
-        } else if ( resistanceModeActive ) {
-            finalISF = liftISFlimited * sensitivityRatio                  //# on top of TT modification
-            originSensFinal = "including resistance mode impact"
-        } else if ( stepActivityDetected || stepInactivityDetected ) {
-            finalISF = liftISFlimited * sensitivityRatio                  //# on top of activity detection
-            originSensFinal  = "including (in-)activity detection impact"
-        } else if (liftISFlimited >= 1) {
-            finalISF = max(liftISFlimited, sensitivityRatio)
-            originSensFinal = if (liftISFlimited >= sensitivityRatio) "" else "from low TT modifier"
-        } else {
-            finalISF = min(liftISFlimited, sensitivityRatio)
-            if (liftISFlimited <= sensitivityRatio) {
-                originSensFinal = ""                                        // low TT lowers sensitivity dominates
+        when {
+            exerciseModeActive          -> {
+                finalISF = liftISFlimited * sensitivityRatio                  //# on top of TT modification
+                originSensFinal = "including exercise mode impact"
+            }
+            resistanceModeActive        -> {
+                finalISF = liftISFlimited * sensitivityRatio                  //# on top of TT modification
+                originSensFinal = "including resistance mode impact"
+            }
+            stepActivityDetected        -> {
+                finalISF = liftISFlimited * sensitivityRatio                  //# on top of activity detection
+                originSensFinal  = "including activity detection impact"
+            }
+            stepInactivityDetected      -> {
+                finalISF = liftISFlimited * sensitivityRatio                  //# on top of activity detection
+                originSensFinal  = "including inactivity detection impact"
+            }
+            liftISFlimited >= 1         -> {
+                finalISF = max(liftISFlimited, sensitivityRatio)
+                originSensFinal = if (liftISFlimited >= sensitivityRatio) "" else "from low TT modifier"
+            }
+            else                        -> {
+                finalISF = min(liftISFlimited, sensitivityRatio)
+                if (liftISFlimited <= sensitivityRatio) {
+                    originSensFinal = ""                                        // low TT lowers sensitivity dominates
+                }
             }
         }
         consoleError.add("final ISF factor is ${round(finalISF, 2)} " + originSensFinal)
