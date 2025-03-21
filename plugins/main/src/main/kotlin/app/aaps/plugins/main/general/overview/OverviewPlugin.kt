@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Typeface
 import android.os.Build
 import android.widget.TextView
 import androidx.preference.PreferenceCategory
@@ -208,15 +209,15 @@ class OverviewPlugin @Inject constructor(
     @SuppressLint("SetTextI18n")
     override fun setVersionView(view: TextView) {
         if (config.APS || config.PUMPCONTROL) {
-            view.text = config.VERSION_NAME //(${config.HEAD.substring(0, 4)})"
-            /*if (config.COMMITTED) {
-                view.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.defaultTextColor))
-                view.alpha = 0.4f
+            view.text = config.VERSION_NAME //"${config.VERSION_NAME} (${config.HEAD.substring(0, 4)})"
+            if (config.COMMITTED) {
+                view.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.omniGrayColor))
+                view.alpha = 1.0f
             } else if (sp.getLong(rh.gs(app.aaps.core.utils.R.string.key_app_expiration) + "_" + config.VERSION_NAME, 0) != 0L) {
                 view.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.metadataTextWarningColor))
             } else {
                 view.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.urgentColor))
-            }*/
+            }
         } else view.text = ""
     }
 
