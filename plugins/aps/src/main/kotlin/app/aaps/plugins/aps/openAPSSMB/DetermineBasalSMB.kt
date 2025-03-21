@@ -250,14 +250,14 @@ class DetermineBasalSMB @Inject constructor(
         var stepActivityDetected = false
         var stepInactivityDetected = false
         var activityRatio = 1.0
-        val recentSteps5Minutes = profile.recent_steps_5_minutes
-        val recentSteps10Minutes = profile.recent_steps_10_minutes
-        val recentSteps15Minutes = profile.recent_steps_15_minutes
-        val recentSteps30Minutes = profile.recent_steps_30_minutes
-        val recentSteps60Minutes = profile.recent_steps_60_minutes
-        val phoneMoved = profile.phone_moved
-        val now = profile.now
-        val timeSinceStart = profile.time_since_start
+        val recentSteps5Minutes = profile.recent_steps_5_minutes ?: 0
+        val recentSteps10Minutes = profile.recent_steps_10_minutes ?: 0
+        val recentSteps15Minutes = profile.recent_steps_15_minutes ?: 0
+        val recentSteps30Minutes = profile.recent_steps_30_minutes ?: 0
+        val recentSteps60Minutes = profile.recent_steps_60_minutes ?: 0
+        val phoneMoved = profile.phone_moved ?: false
+        val now = profile.now ?: 0
+        val timeSinceStart = profile.time_since_start ?: 0
         val ignore_inactivity_overnight = preferences.get(BooleanKey.ActivityMonitorOvernight)
         val inactivity_idle_start =  preferences.get(IntKey.ActivityMonitorIdleStart)
         val inactivity_idle_end = preferences.get(IntKey.ActivityMonitorIdleEnd)
@@ -268,7 +268,7 @@ class DetermineBasalSMB @Inject constructor(
             consoleError.add("Activity detection disabled in the settings. ")
         } else if ( profile.temptargetSet) {
             consoleError.add("Activity detection disabled: tempTarget. ")
-        } else if (!phoneMoved!!) {
+        } else if (!phoneMoved) {
             consoleError.add("Activity detection disabled: Phone seems not to be carried for the last 15 m. ")
         } else {
             consoleError.add("0-5 m ago: $recentSteps5Minutes steps; ")
@@ -278,8 +278,8 @@ class DetermineBasalSMB @Inject constructor(
             consoleError.add("Last 60 m: $recentSteps60Minutes steps; ")
             if ( timeSinceStart < 60 && recentSteps60Minutes <= 200 ) {
                 consoleError.add("Activity monitor initialising for "+(60-timeSinceStart)+" more minutes: inactivity detection disabled")
-            } else if ( ( inactivity_idle_start>inactivity_idle_end && ( now>=inactivity_idle_start || now<inactivity_idle_end ) )  // includes midnight
-                || ( now>=inactivity_idle_start && now<inactivity_idle_end)                                                         // excludes midnight
+            } else if ( ( inactivity_idle_start > inactivity_idle_end && ( now >= inactivity_idle_start || now < inactivity_idle_end ) )  // includes midnight
+                || ( now >= inactivity_idle_start && now < inactivity_idle_end)                                                         // excludes midnight
                 && recentSteps60Minutes <= 200 && ignore_inactivity_overnight )  {
                 consoleError.add("Activity monitor disabled inactivity detection: sleeping hours")
             } else if ( recentSteps5Minutes > 300 || recentSteps10Minutes > 300  || recentSteps15Minutes > 300  || recentSteps30Minutes > 1500 || recentSteps60Minutes > 2500 ) {
