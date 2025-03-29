@@ -1,5 +1,6 @@
 package app.aaps.plugins.aps.openAPSAutoISF
 
+import app.aaps.core.interfaces.automation.AutomationStateInterface
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
@@ -123,6 +124,8 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         .description(R.string.description_auto_isf),
     aapsLogger, rh
 ), APS, PluginConstraints {
+
+    @Inject lateinit var automationStateService: AutomationStateInterface
 
     // last values
     override var lastAPSRun: Long = 0
@@ -352,8 +355,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         //activityRatio = 0.5 // while testing
         var stepActivityDetected = false
         var stepInactivityDetected = false
-        if (activityRatio < 1) {
-            stepActivityDetected = true
+        if (activityRatio < 1) { stepActivityDetected = true
         } else if (activityRatio>1)   { stepInactivityDetected = true}
         preferences.put(BooleanKey.ActivityMonitorStepsActive, stepActivityDetected)
         preferences.put(BooleanKey.ActivityMonitorStepsInactive, stepInactivityDetected)
@@ -444,30 +446,36 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             ketoacidosis_protection_iob = ketoacidosisProtectionIob
         )
         //done calculate exercise ratio
-        var exerciseRatio = 1.0
+        // var exerciseRatio = 1.0
+        var sensitivityRatio = 1.0
         // TODO eliminate
         val target_bg = (minBg + maxBg) / 2
         val exerciseModeActive = highTemptargetRaisesSensitivity && isTempTarget && target_bg > normalTarget
         val resistanceModeActive = oapsProfile.low_temptarget_lowers_sensitivity && isTempTarget && target_bg < normalTarget
-        if ( exerciseModeActive || resistanceModeActive ) {
-            // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
-            // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
-            //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
-            val resistanceMax = min(1.5, preferences.get(DoubleKey.AutosensMax))  // additional safety limit
-            val c = (oapsProfile.half_basal_exercise_target - normalTarget).toDouble()
-            if (c * (c + target_bg - normalTarget) > 0.0) {
-                var sensitivityRatio = c / (c + target_bg - normalTarget)
-                // limit sensitivityRatio to profile.autosens_max (1.2x by default)
-                sensitivityRatio = min(sensitivityRatio, resistanceMax)
-                sensitivityRatio = round(sensitivityRatio, 2)
-                exerciseRatio = sensitivityRatio
+        if ( exerciseModeActive || resistanceModeActive || stepActivityDetected || stepInactivityDetected ) {
+            if (exerciseModeActive || resistanceModeActive) {
+                // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
+                // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
+                //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
+                val resistanceMax = min(1.5, preferences.get(DoubleKey.AutosensMax))  // additional safety limit
+                val c = (oapsProfile.half_basal_exercise_target - normalTarget).toDouble()
+                if (c * (c + target_bg - normalTarget) <= 0.0) {
+                    sensitivityRatio = resistanceMax
+                } else {
+                    sensitivityRatio = c / (c + target_bg - normalTarget)
+                    // limit sensitivityRatio to profile.autosens_max (1.2x by default)
+                    sensitivityRatio = min(sensitivityRatio, resistanceMax)
+                    sensitivityRatio = round(sensitivityRatio, 2)
+                    //exerciseRatio = sensitivityRatio
+                }
+            } else {
+                sensitivityRatio = activityRatio
             }
         }
-
         var iobTH_reduction_ratio = 1.0
         var use_iobTH = false
         if (iobThresholdPercent != 100) {
-            iobTH_reduction_ratio = profile_percentage / 100.0 * exerciseRatio * activityRatio
+            iobTH_reduction_ratio = profile_percentage / 100.0 * sensitivityRatio
             use_iobTH = true
         }
         val iobTHtolerance = 130.0
@@ -643,6 +651,14 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         val inactivity_idle_start =  preferences.get(IntKey.ActivityMonitorIdleStart)           // profile.inactivity_idle_start;
         val inactivity_idle_end = preferences.get(IntKey.ActivityMonitorIdleEnd)                // profile.inactivity_idle_end;
 
+        //val existSleepState = automationStateService.hasStateValues("Sleeping")
+        val useSleepState = automationStateService.inState("Sleeping", "True")
+        // really still sleeping?
+        if (useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && now>=inactivity_idle_end) {
+            automationStateService.setState("query_got_up", "query_it")
+        }
+        aapsLogger.debug(LTag.APS, "Sleeping state exists: ${automationStateService.hasStateValues("Sleeping")}, current value: $useSleepState, trigger awake test:${useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && now>=inactivity_idle_end}")
+
         if ( !activityDetection ) {
             consoleLog.add("Activity monitor disabled in settings")
         } else if ( isTempTarget ) {
@@ -676,7 +692,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 activityRatio = 1 + 0.1 * inactivity_scale_factor
                 consoleLog.add("Activity monitor detected partial inactivity, sensitivity ratio: $activityRatio")
             } else {
-                consoleLog.add("Activity monitor detected neutral state, sensitivity ratio unchanged: $activityRatio")
+                consoleLog.add("Activity monitor detected neutral state")  //, sensitivity ratio unchanged: $activityRatio")
             }
         }
         preferences.put(DoubleKey.ActivityMonitorRatio, activityRatio)
@@ -703,9 +719,9 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         val activityRatio = preferences.get(DoubleKey.ActivityMonitorRatio)
         val stepActivityDetected = preferences.get(BooleanKey.ActivityMonitorStepsActive)
         val stepInactivityDetected = preferences.get(BooleanKey.ActivityMonitorStepsInactive)
-        var exercise_ratio = 1.0
+        // var exercise_ratio = 1.0
         var sensitivityRatio = 1.0
-        var origin_sens = ""
+        //var origin_sens = "no longer used"
         val exerciseModeActive = high_temptarget_raises_sensitivity && isTempTarget && target_bg > normalTarget
         val resistanceModeActive = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens)  && isTempTarget && target_bg < normalTarget
         if ( exerciseModeActive || resistanceModeActive || stepActivityDetected || stepInactivityDetected ) {
@@ -713,20 +729,21 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
                 // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
                 //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
+                val resistanceMax = min(1.5, preferences.get(DoubleKey.AutosensMax))  // additional safety limit
                 val halfBasalTarget = preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget)
                 val c = (halfBasalTarget - normalTarget).toDouble()
                 if (c * (c + target_bg - normalTarget) <= 0.0) {
-                    sensitivityRatio = preferences.get(DoubleKey.AutosensMax)
+                    sensitivityRatio = resistanceMax
                     // consoleError.add("Sensitivity decrease for temp target of $target_bg limited by Autosens_max; ")
 
                 } else {
                     sensitivityRatio = c / (c + target_bg - normalTarget)
                     // limit sensitivityRatio to profile.autosens_max (1.2x by default)
                 }
-                sensitivityRatio = min(sensitivityRatio, preferences.get(DoubleKey.AutosensMax))
+                sensitivityRatio = min(sensitivityRatio, resistanceMax)
                 sensitivityRatio = round(sensitivityRatio, 2)
-                exercise_ratio = sensitivityRatio
-                origin_sens = " from TT modifier"
+                // exercise_ratio = sensitivityRatio
+                // origin_sens = " from TT modifier"
                 // consoleError.add("Sensitivity ratio set to $sensitivityRatio based on temp target of $target_bg; ")
 
             } else if ( stepActivityDetected ) {
@@ -831,7 +848,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 liftISF = bg_ISF * acce_ISF                                 // bg_ISF could become > 1 now
                 consoleError.add("bg_ISF adaptation lifted to ${round(liftISF, 2)} as bg accelerates already")
             }
-            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
+            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
             return min(720.0, round(sens / final_ISF, 1))         // observe ISF maximum of 720(?)
         } else if (bg_ISF > 1.0) {
             sens_modified = true
@@ -884,7 +901,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 consoleError.add("strongest autoISF factor ${round(liftISF, 2)} weakened to ${round(liftISF * acce_ISF, 2)} as bg decelerates already")
                 liftISF = liftISF * acce_ISF
             }
-            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, origin_sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
+            final_ISF = withinISFlimits(liftISF, autoISF_min, maxISFReduction, sensitivityRatio, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)
             return round(sens / final_ISF, 1)
         }
         consoleError.add("----------------------------------")
@@ -960,7 +977,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     }
 
     fun withinISFlimits(
-        liftISF: Double, minISFReduction: Double, maxISFReduction: Double, sensitivityRatio: Double, origin_sens: String,
+        liftISF: Double, minISFReduction: Double, maxISFReduction: Double, sensitivityRatio: Double,
         exerciseModeActive: Boolean, resistanceModeActive: Boolean, stepActivityDetected:Boolean, stepInactivityDetected: Boolean
     ): Double {
         var liftISFlimited: Double = liftISF
@@ -972,36 +989,38 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             liftISFlimited = maxISFReduction
         }
         var finalISF = 1.0
-        var originSensFinal = origin_sens
+        var originSens = ""
         when {
             exerciseModeActive          -> {
-                finalISF = liftISFlimited * sensitivityRatio                  //# on top of TT modification
-                originSensFinal = "including exercise mode impact"
+                finalISF = liftISFlimited * sensitivityRatio                //# on top of TT modification
+                originSens = "including exercise mode impact"
             }
             resistanceModeActive        -> {
-                finalISF = liftISFlimited * sensitivityRatio                  //# on top of TT modification
-                originSensFinal = "including resistance mode impact"
+                finalISF = liftISFlimited * sensitivityRatio                //# on top of TT modification
+                originSens = "including resistance mode impact"
             }
             stepActivityDetected        -> {
-                finalISF = liftISFlimited * sensitivityRatio                  //# on top of activity detection
-                originSensFinal  = "including activity detection impact"
+                finalISF = liftISFlimited * sensitivityRatio                //# on top of activity detection
+                originSens  = "including activity detection impact"
             }
             stepInactivityDetected      -> {
-                finalISF = liftISFlimited * sensitivityRatio                  //# on top of activity detection
-                originSensFinal  = "including inactivity detection impact"
+                finalISF = liftISFlimited * sensitivityRatio                //# on top of inactivity detection
+                originSens  = "including inactivity detection impact"
             }
-            liftISFlimited >= 1         -> {
+            liftISFlimited >= 1         -> {                                // can we evr get here?
                 finalISF = max(liftISFlimited, sensitivityRatio)
-                originSensFinal = if (liftISFlimited >= sensitivityRatio) "" else "from low TT modifier"
+                if (liftISFlimited < sensitivityRatio) {
+                    originSens = "from low TT modifier"
+                }
             }
             else                        -> {
                 finalISF = min(liftISFlimited, sensitivityRatio)
-                if (liftISFlimited <= sensitivityRatio) {
-                    originSensFinal = ""                                        // low TT lowers sensitivity dominates
-                }
+                //if (liftISFlimited <= sensitivityRatio) {
+                //    originSensFinal = ""                                  // low TT lowers sensitivity dominates
+                //}
             }
         }
-        consoleError.add("final ISF factor is ${round(finalISF, 2)} " + originSensFinal)
+        consoleError.add("final ISF factor is ${round(finalISF, 2)} " + originSens)
         consoleError.add("----------------------------------")
         consoleError.add("end AutoISF")
         consoleError.add("----------------------------------")
