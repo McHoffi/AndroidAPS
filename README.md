@@ -1,24 +1,29 @@
-# AAPS 3.3.1.2 modified (alpha status)
+# AAPS 3.3.2.0 | Modified version, especially for active people
 
 There may be problems installing this version as an update over the previous one. Please uninstall the previous version before installation and then import your settings.
 
-This version does not have all changes of my branch sport-changes. Fully integrated are
-- Activity mode (full integrated in OpenAPS SMB, partially in Auto ISF)
-- Ketoacidosis protection
-- Additional hypo strategy: hypoTT + tbr 50% @ 60 min
-- Reduced SMB functionality (no SMB if blood glucose is below 100 mg/dl)
-- Allow temp targets up to 220 mg/dl (12 mmol/l)
+This version contains the main changes of my previous sport-changes version 3.2.0.4; the Activity Monitor in the openAPSSMB algorithm has been added:
+This version includes the main modifications from sport-changes v3.2.0.4:
+- Exercise Mode (→ setting: high tt raises sensitivity), toggleable via the overview icon for openAPSSMB, dynISF and autoISF.
+- Activity Monitor (enable in settings): Uses phone step counter (ensure movement permission granted). Adjusts basal and ISF based on activity/inactivity.
+- Ketoacidosis Protection (enable in settings):
+(a) Reduces basal if IOB ≈ no insulin for 1h, or
+(b) Ensures a minimum basal (e.g., 20%) to avoid 0% TBR.
+- Additional hypo strategy: hypoTT + 50% TBR for 60 min.
+- Reduced SMB: no SMB if BG < 100 mg/dl.
+- Temp targets up to 220 mg/dl (12 mmol/l) allowed.
+- Layout fixes for small devices.
+- autoISF no longer requires engineering mode.
 
-autoISF has the same status as in the official master branch 3.3.1, but does not yet have all the functions which are developed
-
-The attempt to use steps from Wear OS watches for Activity Mode has not yet been tested.
+autoISF 3.1.0 has more functions than in the official master branch (3.2.0); dynISF isn't modified anymore (imho dynISF in particular is not recommended!)
 
 Otherwise the usual disclaimer applies:
-This repo has some private changes concerning tbr management, iob and layout. This is experimental! Please use the master branch Nightscout! URL: https://github.com/nightscout/AndroidAPS
+This repo has some private changes concerning tbr management, iob and layout. This is experimental!
+Please use the master branch Nightscout! URL: https://github.com/nightscout/AndroidAPS
 
 # AAPS
 * Check the wiki: https://wiki.aaps.app
-*  Everyone who’s been looping with AAPS needs to fill out the form after 3 days of looping  https://docs.google.com/forms/d/14KcMjlINPMJHVt28MDRupa4sz4DDIooI4SrW0P3HSN8/viewform?c=0&w=1
+* Everyone who’s been looping with AAPS needs to fill out the form after 3 days of looping  https://docs.google.com/forms/d/14KcMjlINPMJHVt28MDRupa4sz4DDIooI4SrW0P3HSN8/viewform?c=0&w=1
 
 [![Support Server](https://img.shields.io/discord/629952586895851530.svg?label=Discord&logo=Discord&colorB=7289da&style=for-the-badge)](https://discord.gg/4fQUWHZ4Mw)
 
@@ -30,7 +35,3 @@ This repo has some private changes concerning tbr management, iob and layout. Th
 DEV: 
 [![CircleCI](https://circleci.com/gh/nightscout/AndroidAPS/tree/dev.svg?style=svg)](https://circleci.com/gh/nightscout/AndroidAPS/tree/dev)
 [![codecov](https://codecov.io/gh/nightscout/AndroidAPS/branch/dev/graph/badge.svg?token=EmklfIV6bH)](https://codecov.io/gh/nightscout/AndroidAPS/tree/dev)
-
-<img src="https://cdn.iconscout.com/icon/free/png-256/bitcoin-384-920569.png" srcset="https://cdn.iconscout.com/icon/free/png-512/bitcoin-384-920569.png 2x" alt="Bitcoin Icon" width="100">
-
-3KawK8aQe48478s6fxJ8Ms6VTWkwjgr9f2
