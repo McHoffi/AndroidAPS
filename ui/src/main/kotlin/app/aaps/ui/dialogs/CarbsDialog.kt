@@ -253,7 +253,7 @@ class CarbsDialog : DialogFragmentWithDate() {
         val useAlarm = binding.alarmCheckBox.isChecked
         val remindBolus = binding.bolusReminderCheckBox.isChecked
 
-        val activitySelected = binding.activityTt.isChecked
+        val activitySelected = binding.hypoAction.isChecked //mod binding.activityTt.isChecked
         if (activitySelected)
             actions.add(
                 rh.gs(R.string.temp_target_short) + ": " + (decimalFormatter.to1Decimal(activityTT) + " " + unitLabel + " (" + rh.gs(
