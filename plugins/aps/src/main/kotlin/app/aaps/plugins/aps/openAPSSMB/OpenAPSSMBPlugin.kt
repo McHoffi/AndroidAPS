@@ -83,6 +83,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.max
 
 @Singleton
 open class OpenAPSSMBPlugin @Inject constructor(
@@ -489,7 +490,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
             recent_steps_60_minutes = recentSteps60Minutes,
             phone_moved = PhoneMovementDetector.phoneMoved(),
             time_since_start = elapsedTimeSinceLastStart,
-            now = calendar.get(Calendar.HOUR_OF_DAY),
+            now = max(1, Calendar.getInstance().get(Calendar.HOUR_OF_DAY)),
             // end mod
             maxCOB = SMBDefaults.maxCOB,
             skip_neutral_temps = pump.setNeutralTempAtFullHour(),

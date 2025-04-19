@@ -637,8 +637,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         }
 
         // Time - used for sleep window
-        var now = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        if (now < 1) now = 1
+        val hour = max(1, Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
 
         val phoneMoved = PhoneMovementDetector.phoneMoved()
         val lastAppStart = preferences.get(LongKey.AppStart)
@@ -654,10 +653,10 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         //val existSleepState = automationStateService.hasStateValues("Sleeping")
         val useSleepState = automationStateService.inState("Sleeping", "True")
         // really still sleeping?
-        if (useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && now>=inactivity_idle_end) {
+        if (useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && hour>=inactivity_idle_end) {
             automationStateService.setState("query_got_up", "query_it")
         }
-        aapsLogger.debug(LTag.APS, "Sleeping state exists: ${automationStateService.hasStateValues("Sleeping")}, current value: $useSleepState, trigger awake test:${useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && now>=inactivity_idle_end}")
+        aapsLogger.debug(LTag.APS, "Sleeping state exists: ${automationStateService.hasStateValues("Sleeping")}, current value: $useSleepState, trigger awake test:${useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && hour>=inactivity_idle_end}")
 
         if ( !activityDetection ) {
             consoleLog.add("Activity monitor disabled in settings")
@@ -668,8 +667,8 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         } else if ( time_since_start < 60 && recentSteps60Minutes <= 200 ) {
             consoleLog.add("Activity monitor initialising for ${60-time_since_start} more minutes: inactivity detection disabled")
         } else {
-            if ( ( inactivity_idle_start > inactivity_idle_end && ( now >= inactivity_idle_start || now < inactivity_idle_end ) )  // includes midnight
-                || ( now >= inactivity_idle_start && now < inactivity_idle_end)                                                    // excludes midnight
+            if ( ( inactivity_idle_start > inactivity_idle_end && ( hour >= inactivity_idle_start || hour < inactivity_idle_end ) )  // includes midnight
+                || ( hour >= inactivity_idle_start && hour < inactivity_idle_end)                                                    // excludes midnight
                 && recentSteps60Minutes <= 200 && ignore_inactivity_overnight ) {
                 consoleLog.add("Activity monitor disabled inactivity detection: sleeping hours")
             } else if ( recentSteps5Minutes > 300 || recentSteps10Minutes > 300  || recentSteps15Minutes > 300  || recentSteps30Minutes > 1500 || recentSteps60Minutes > 2500 ) {
