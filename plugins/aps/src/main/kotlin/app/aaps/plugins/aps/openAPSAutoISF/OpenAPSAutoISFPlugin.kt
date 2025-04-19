@@ -133,7 +133,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     override var lastAPSResult: DetermineBasalResult? = null
     private var consoleError = mutableListOf<String>()
     private var consoleLog = mutableListOf<String>()
-    val autoIsfVersion = "3.0.3"
+    val autoIsfVersion = "3.1.0"
     val autoIsfWeights; get() = preferences.get(BooleanKey.ApsUseAutoIsfWeights)
     private val autoISF_max; get() = preferences.get(DoubleKey.ApsAutoIsfMax)
     private val autoISF_min; get() = preferences.get(DoubleKey.ApsAutoIsfMin)
@@ -182,7 +182,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         aapsLogger.debug(LTag.APS, "Loaded $count variable sensitivity values from database")
     }
 
-    override fun supportsDynamicIsf() = true //: Boolean = preferences.get(BooleanKey.ApsUseAutoIsf)
+    override fun supportsDynamicIsf() = false //: Boolean = preferences.get(BooleanKey.ApsUseAutoIsf)
 
     override fun getIsfMgdl(profile: Profile, caller: String): Double? {
         val start = dateUtil.now()
@@ -303,7 +303,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
 
         // End of check, start gathering data
 
-        val autoIsfMode = supportsDynamicIsf()  // preferences.get(BooleanKey.ApsUseAutoIsf)
+        val autoIsfMode = true  //supportsDynamicIsf()  // preferences.get(BooleanKey.ApsUseAutoIsf)
         val smbEnabled = preferences.get(BooleanKey.ApsUseSmb)
         val advancedFiltering = constraintsChecker.isAdvancedFilteringEnabled().also { inputConstraints.copyReasons(it) }.value()
 
@@ -348,8 +348,10 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         //consoleLog = mutableListOf()
         consoleError.clear()
         consoleLog.clear()
+        // Time - not used without sleep window
+        val hour = max(1, Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
 
-        var activityRatio = activityMonitor(isTempTarget, glucoseStatus.glucose, targetBg)
+        var activityRatio = activityMonitor(isTempTarget, glucoseStatus.glucose, targetBg, hour)
         val activityLog = if (consoleLog.size==0) "Activity Monitor skipped" else consoleLog[0]
         consoleLog.clear()
         //activityRatio = 0.5 // while testing
@@ -617,7 +619,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     fun convert_bg_to_units(value: Double, profile: OapsProfileAutoIsf): Double =
         if (profile.out_units == "mmol/L") value * Constants.MGDL_TO_MMOLL else value
 
-    fun activityMonitor(isTempTarget: Boolean, bg: Double, target_bg: Double): Double
+    fun activityMonitor(isTempTarget: Boolean, bg: Double, target_bg: Double, now: Int): Double
     {
 
         if (preferences.get(BooleanKey.ActivityMonitorSaveStepsFromSmartphone)) {
@@ -650,13 +652,27 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         val inactivity_idle_start =  preferences.get(IntKey.ActivityMonitorIdleStart)           // profile.inactivity_idle_start;
         val inactivity_idle_end = preferences.get(IntKey.ActivityMonitorIdleEnd)                // profile.inactivity_idle_end;
 
-        //val existSleepState = automationStateService.hasStateValues("Sleeping")
+        val existSleepState = automationStateService.hasStateValues("Sleeping")
         val useSleepState = automationStateService.inState("Sleeping", "True")
+        if (automationStateService.inState("Sleeping", "False")) {
+            aapsLogger.debug(LTag.APS, "State json for Sleep mode: {\"Sleeping\":\"False\"}")
+        } else if (automationStateService.inState("Sleeping", "True")) {
+            aapsLogger.debug(LTag.APS, "State json for Sleep mode: {\"Sleeping\":\"True\"}")
+        } else {
+            aapsLogger.debug(LTag.APS, "State json for Sleep mode: {\"Sleeping\":\"\"}")
+        }
         // really still sleeping?
-        if (useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && hour>=inactivity_idle_end) {
+        if (useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && now>=inactivity_idle_end) {
             automationStateService.setState("query_got_up", "query_it")
         }
-        aapsLogger.debug(LTag.APS, "Sleeping state exists: ${automationStateService.hasStateValues("Sleeping")}, current value: $useSleepState, trigger awake test:${useSleepState && (recentSteps5Minutes>20 && recentSteps15Minutes>20) && hour>=inactivity_idle_end}")
+        if (automationStateService.inState("query_got_up", "ignore")) {
+            aapsLogger.debug(LTag.APS, "State json for got up query: {\"query_got_up\":\"ignore\"}")
+        } else if (automationStateService.inState("query_got_up", "query_it")) {
+            aapsLogger.debug(LTag.APS, "State json for got up query: {\"query_got_up\":\"query_it\"}")
+        } else {
+            aapsLogger.debug(LTag.APS, "State json for got up query: {\"query_got_up\":\"\"}")
+        }
+
 
         if ( !activityDetection ) {
             consoleLog.add("Activity monitor disabled in settings")
@@ -664,12 +680,14 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             consoleLog.add("Activity monitor disabled: tempTarget")
         } else if ( !phoneMoved ) {
             consoleLog.add("Activity monitor disabled: Phone seems not to be carried for the last 15m")
-        } else if ( time_since_start < 60 && recentSteps60Minutes <= 200 ) {
-            consoleLog.add("Activity monitor initialising for ${60-time_since_start} more minutes: inactivity detection disabled")
         } else {
-            if ( ( inactivity_idle_start > inactivity_idle_end && ( hour >= inactivity_idle_start || hour < inactivity_idle_end ) )  // includes midnight
-                || ( hour >= inactivity_idle_start && hour < inactivity_idle_end)                                                    // excludes midnight
-                && recentSteps60Minutes <= 200 && ignore_inactivity_overnight ) {
+            if ( time_since_start < 60 && recentSteps60Minutes <= 200 ) {
+                consoleLog.add("Activity monitor initialising for ${60 - time_since_start} more minutes: inactivity detection disabled")
+            } else if ( useSleepState && recentSteps60Minutes <= 200) {
+                consoleLog.add("Activity monitor disabled inactivity detection: sleeping state")
+            } else if ( (( inactivity_idle_start>inactivity_idle_end && ( now>=inactivity_idle_start || now<inactivity_idle_end ) )  // includes midnight
+                || ( now>=inactivity_idle_start && now<inactivity_idle_end)  )                                                       // excludes midnight
+                && recentSteps60Minutes <= 200 && ignore_inactivity_overnight && !existSleepState) {
                 consoleLog.add("Activity monitor disabled inactivity detection: sleeping hours")
             } else if ( recentSteps5Minutes > 300 || recentSteps10Minutes > 300  || recentSteps15Minutes > 300  || recentSteps30Minutes > 1500 || recentSteps60Minutes > 2500 ) {
                 //stepActivityDetected = true;
@@ -763,8 +781,26 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             sensitivityRatio = autosensResult.ratio
             // consoleError.add("Autosens ratio: $sensitivityRatio; ")
         }
-        if (!supportsDynamicIsf() || !autoIsfWeights || glucose_status == null) {
+        //if (!supportsDynamicIsf() || !autoIsfWeights || glucose_status == null) {
+        if (automationStateService.inState("Calibration", "done")) {
+            aapsLogger.debug(LTag.APS, "State json for AutoISF weights: {\"Calibration\":\"done\"}")
+        } else if (automationStateService.inState("Calibration", "start")) {
+            aapsLogger.debug(LTag.APS, "State json for AutoISF weights: {\"Calibration\":\"start\"}")
+        } else if (automationStateService.inState("Calibration", "ongoing")) {
+            aapsLogger.debug(LTag.APS, "State json for AutoISF weights: {\"Calibration\":\"ongoing\"}")
+        } else {
+            aapsLogger.debug(LTag.APS, "State json for AutoISF weights: {\"Calibration\":\"\"}")
+        }
+        var skipWeights = false
+        if (automationStateService.inState("Calibration", "ongoing")) {
+            consoleError.add("autoISF weights disabled while calibrating")
+            skipWeights = true
+
+        } else if ( !autoIsfWeights || glucose_status == null) {
             consoleError.add("autoISF weights disabled in Preferences")
+            skipWeights = true
+        }
+        if (skipWeights) {
             consoleError.add("----------------------------------")
             consoleError.add("end AutoISF")
             consoleError.add("----------------------------------")
@@ -781,7 +817,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             autosensData.autosensResult
         } else autosensResult.sensResult = "autosens disabled"
 
-        val dura05: Double = glucose_status.duraISFminutes
+        val dura05: Double = glucose_status!!.duraISFminutes
         val avg05: Double = glucose_status.duraISFaverage
         val maxISFReduction: Double = autoISF_max
         var sens_modified = false
@@ -793,7 +829,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         // calculate acce_ISF from bg acceleration and adapt ISF accordingly
         val fit_corr: Double = glucose_status.corrSqu
         val bg_acce: Double = glucose_status.bgAcceleration
-        consoleError.add("Parabola fit results were acceleration:${round(bg_acce, 2)}, correlation:$fit_corr, duration:${glucose_status.parabolaMinutes}m")
+        //consoleError.add("Parabola fit results were acceleration:${round(bg_acce, 2)}, correlation:$fit_corr, duration:${glucose_status.parabolaMinutes}m")
         if (glucose_status.a2 != 0.0 && fit_corr >= 0.9) {
             var minmax_delta: Double = -glucose_status.a1 / 2 / glucose_status.a2 * 5      // back from 5min block to 1 min
             var minmax_value: Double = round(glucose_status.a0 - minmax_delta * minmax_delta / 25 * glucose_status.a2, 1)
@@ -1049,7 +1085,20 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         if (!microBolusAllowed) {
             return "AAPS"                                                 // see message in enable_smb
         }
-        if (enableSMB_EvenOn_OddOff_always) {
+
+        if (automationStateService.inState("Calibration", "done")) {
+            aapsLogger.debug(LTag.APS, "State json for SMB suppression: {\"Calibration\":\"done\"}")
+        } else if (automationStateService.inState("Calibration", "start")) {
+            aapsLogger.debug(LTag.APS, "State json for SMB suppression: {\"Calibration\":\"start\"}")
+        } else if (automationStateService.inState("Calibration", "ongoing")) {
+            aapsLogger.debug(LTag.APS, "State json for SMB suppression: {\"Calibration\":\"ongoing\"}")
+        } else {
+            aapsLogger.debug(LTag.APS, "State json for SMB suppression: {\"Calibration\":\"\"}")
+        }
+        if (automationStateService.inState("Calibration", "ongoing")) {
+            consoleLog.add("SMB disabled while calibrating")
+            return "blocked"
+        } else if (enableSMB_EvenOn_OddOff_always) {
             //TODO: cleaner conversion back to original mmol/L if applicable
             var target = convert_bg_to_units(profile.target_bg, profile)
             // val msgType: String
