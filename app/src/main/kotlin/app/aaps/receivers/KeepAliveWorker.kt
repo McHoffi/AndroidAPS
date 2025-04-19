@@ -54,7 +54,7 @@ class KeepAliveWorker(
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var commandQueue: CommandQueue
-    @Inject lateinit var maintenancePlugin: MaintenancePlugin
+    //@Inject lateinit var maintenancePlugin: MaintenancePlugin
     @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var sp: SP
 
@@ -130,7 +130,7 @@ class KeepAliveWorker(
         localAlertUtils.checkStaleBGAlert()
         checkPump()
         checkAPS()
-        maintenancePlugin.deleteLogs(30)
+        //maintenancePlugin.deleteLogs(30)
         workerDbStatus()
         databaseCleanup()
 
