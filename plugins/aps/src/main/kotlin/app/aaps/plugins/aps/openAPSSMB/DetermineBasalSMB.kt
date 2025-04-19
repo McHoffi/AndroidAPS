@@ -328,7 +328,9 @@ class DetermineBasalSMB @Inject constructor(
             val c = (halfBasalTarget - normalTarget).toDouble()
             sensitivityRatio = c / (c + target_bg - normalTarget)
             // limit sensitivityRatio to profile.autosens_max (1.2x by default)
-            sensitivityRatio = min(sensitivityRatio, profile.autosens_max)
+            // mod limit to 1.3 max
+            val sensitivityRatioLimit = min(1.3, profile.autosens_max)
+            sensitivityRatio = min(sensitivityRatio, sensitivityRatioLimit) // min(sensitivityRatio, profile.autosens_max)
             sensitivityRatio = round(sensitivityRatio, 2)
             consoleError.add("Sensitivity ratio set to $sensitivityRatio based on temp target of $target_bg; ")
         } else {
