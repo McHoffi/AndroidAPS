@@ -203,7 +203,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/bg"
+        app:layout_constraintBottom_toBottomOf="@+id/deltas_layout"
         app:layout_constraintEnd_toStartOf="@id/time_layout"
         app:layout_constraintStart_toEndOf="@id/deltas_layout"
         app:layout_constraintTop_toTopOf="parent"
@@ -216,7 +216,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="0dp"
             android:layout_marginStart="0dp"
-            android:layout_marginTop="-5dp"
+            android:layout_marginTop="0dp"
             android:visibility="visible"
             app:srcCompat="@drawable/ic_loop_closed"
             android:contentDescription="@string/aps_mode_title" />
@@ -233,7 +233,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textStyle="bold"
             android:textSize="14dp"
-            android:visibility="visible"
+            android:visibility="gone"
             tools:ignore="HardcodedText" />
 
         <TextView
