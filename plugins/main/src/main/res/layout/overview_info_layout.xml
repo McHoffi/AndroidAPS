@@ -82,7 +82,7 @@
             android:layout_marginLeft="-2dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textSize="18dp"
+            android:textSize="16dp"
             tools:ignore="HardcodedText" />
 
     </LinearLayout>
@@ -110,7 +110,7 @@
                 android:text="Δ: "
                 android:contentDescription="last delta"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
             <TextView
@@ -121,7 +121,7 @@
                 android:textAlignment="textEnd"
                 tools:text="n/a"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
         </TableRow>
@@ -140,7 +140,7 @@
                 android:text="Δ15: "
                 android:contentDescription="15 minutes delta"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
             <TextView
@@ -151,7 +151,7 @@
                 android:textAlignment="textEnd"
                 tools:text="n/a"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
         </TableRow>
@@ -170,7 +170,7 @@
                 android:text="Δ40: "
                 android:contentDescription="40 minutes delta"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
             <TextView
@@ -181,7 +181,7 @@
                 android:textAlignment="textEnd"
                 tools:text="n/a"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="18dp"
+                android:textSize="16dp"
                 tools:ignore="HardcodedText" />
 
         </TableRow>
@@ -216,7 +216,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="0dp"
             android:layout_marginStart="0dp"
-            android:layout_marginTop="-2dp"
+            android:layout_marginTop="-5dp"
             android:visibility="visible"
             app:srcCompat="@drawable/ic_loop_closed"
             android:contentDescription="@string/aps_mode_title" />
@@ -314,7 +314,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 
@@ -347,7 +347,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 
@@ -379,7 +379,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 
@@ -410,7 +410,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 
@@ -443,7 +443,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             tools:ignore="HardcodedText" />
 
         <TextView
@@ -456,7 +456,7 @@
             android:paddingBottom="3dp"
             tools:text="n/a"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textSize="20dp"
+            android:textSize="18dp"
             android:visibility="visible"
             tools:ignore="HardcodedText" />
     </LinearLayout>

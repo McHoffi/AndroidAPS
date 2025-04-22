@@ -713,6 +713,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.superbolus)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
+                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     loop.isDisconnected                                                         -> {
@@ -720,6 +721,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.disconnected)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
+                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     (loop as PluginBase).isEnabled() && loop.isSuspended                        -> {
@@ -727,6 +729,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.suspendloop_label)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
+                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     pump.isSuspended()                                                          -> {
@@ -742,30 +745,35 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                             }
                         )
                         binding.infoLayout.apsModeText.visibility = View.GONE
+                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     (loop as PluginBase).isEnabled() && closedLoopEnabled.value() && loop.isLGS -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_lgs)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.uel_lgs_loop_mode)
                         binding.infoLayout.apsModeText.visibility = View.GONE
+                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     (loop as PluginBase).isEnabled() && closedLoopEnabled.value()               -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.objects.R.drawable.ic_loop_closed)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.closedloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
+                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     (loop as PluginBase).isEnabled() && !closedLoopEnabled.value()              -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_open)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.openloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
+                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     else                                                                        -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_disabled)
                         apsModeSetA11yLabel(R.string.disabled_loop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
+                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
                 }
             } else {
