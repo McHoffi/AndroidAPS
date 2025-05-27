@@ -43,6 +43,7 @@ data class OapsProfile(
     var enableUAM: Boolean,
     var A52_risk_enable: Boolean,
     var SMBInterval: Int,
+    val thresholdSMB: Double = 100.0,
     var enableSMB_with_COB: Boolean,
     var enableSMB_with_temptarget: Boolean,
     var allowSMB_with_high_temptarget: Boolean,
@@ -65,4 +66,5 @@ data class OapsProfile(
     val ketoacidosis_protection_var_strategy: Boolean,
     var ketoacidosis_protection_basal: Int = 20,
     val ketoacidosis_protection_iob: Double = 0.0
+
 )

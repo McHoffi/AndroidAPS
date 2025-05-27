@@ -949,10 +949,10 @@ class DetermineBasalSMB @Inject constructor(
             enableSMB = false
         }
 
-        // mod no smb if bg < 100
-        if (enableSMB && bg < 100) {
-            consoleError.add("BG < 100 - disabling SMB")
-            rT.reason.append("BG < 100 - disabling SMB")
+        // mod no smb if bg < threshold
+        if (enableSMB && bg < profile.thresholdSMB) {
+            consoleError.add("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
+            rT.reason.append("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
             enableSMB = false
         }
         // end mod

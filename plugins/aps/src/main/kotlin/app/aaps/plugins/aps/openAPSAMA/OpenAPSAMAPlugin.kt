@@ -41,6 +41,7 @@ import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.LongKey
 import app.aaps.core.keys.Preferences
+import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.objects.aps.DetermineBasalResult
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.convertedToAbsolute
@@ -55,8 +56,6 @@ import app.aaps.plugins.aps.OpenAPSFragment
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
-import app.aaps.plugins.aps.openAPSSMB.PhoneMovementDetector
-import app.aaps.plugins.aps.openAPSSMB.StepService
 import dagger.android.HasAndroidInjector
 import org.json.JSONObject
 import javax.inject.Inject
@@ -228,7 +227,7 @@ class OpenAPSAMAPlugin @Inject constructor(
             enableUAM = false, // not used
             A52_risk_enable = SMBDefaults.A52_risk_enable, // not used
             SMBInterval = 0, // not used
-            enableSMB_with_COB = false, // not used
+            thresholdSMB = 100.0, // not used
             enableSMB_with_temptarget = false,
             allowSMB_with_high_temptarget = false,
             enableSMB_always = false, // not used
@@ -248,7 +247,8 @@ class OpenAPSAMAPlugin @Inject constructor(
             ketoacidosis_protection = false, // not used
             ketoacidosis_protection_var_strategy = false, // not used
             ketoacidosis_protection_basal = 20, // not used
-            ketoacidosis_protection_iob = 0.0 // not used
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = false // not used
         )
 
         aapsLogger.debug(LTag.APS, ">>> Invoking determine_basal AMA <<<")

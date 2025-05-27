@@ -24,6 +24,7 @@ import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.LongKey
 import app.aaps.core.keys.Preferences
 import app.aaps.core.keys.StringKey
+import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.utils.JsonHelper
 import app.aaps.di.TestApplication
 import app.aaps.plugins.aps.openAPSAMA.DetermineBasalAMA
@@ -209,7 +210,7 @@ class ReplayApsResultsTest @Inject constructor() {
             adv_target_adjustments = determineBasalResult.profile.getBoolean("adv_target_adjustments"),
             exercise_mode = determineBasalResult.profile.getBoolean("exercise_mode"),
             half_basal_exercise_target = determineBasalResult.profile.getInt("half_basal_exercise_target"),
-            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
+            activity_detection = false,
             recent_steps_5_minutes = StepService.getRecentStepCount5Min(),
             recent_steps_10_minutes = StepService.getRecentStepCount10Min(),
             recent_steps_15_minutes = StepService.getRecentStepCount15Min(),
@@ -224,7 +225,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = determineBasalResult.profile.getBoolean("enableUAM"),
             A52_risk_enable = determineBasalResult.profile.getBoolean("A52_risk_enable"),
             SMBInterval = determineBasalResult.profile.getInt("SMBInterval"),
-            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB"),
+            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
             enableSMB_with_temptarget = determineBasalResult.profile.getBoolean("enableSMB_with_temptarget"),
             allowSMB_with_high_temptarget = determineBasalResult.profile.getBoolean("allowSMB_with_high_temptarget"),
             enableSMB_always = determineBasalResult.profile.getBoolean("enableSMB_always"),
@@ -244,7 +245,8 @@ class ReplayApsResultsTest @Inject constructor() {
             ketoacidosis_protection = preferences.get(BooleanKey.ApsKetoacidosisProtection),
             ketoacidosis_protection_var_strategy = preferences.get(BooleanKey.ApsKetoacidosisVarStrategy),
             ketoacidosis_protection_basal = preferences.get(IntKey.ApsKetoacidosisProtectionBasal),
-            ketoacidosis_protection_iob = 0.0
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB")
         )
         val meatData = MealData(
             carbs = determineBasalResult.mealData.getDouble("carbs"),
@@ -389,7 +391,7 @@ class ReplayApsResultsTest @Inject constructor() {
             adv_target_adjustments = determineBasalResult.profile.getBoolean("adv_target_adjustments"),
             exercise_mode = determineBasalResult.profile.getBoolean("exercise_mode"),
             half_basal_exercise_target = determineBasalResult.profile.getInt("half_basal_exercise_target"),
-            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
+            activity_detection = false,
             recent_steps_5_minutes = StepService.getRecentStepCount5Min(),
             recent_steps_10_minutes = StepService.getRecentStepCount10Min(),
             recent_steps_15_minutes = StepService.getRecentStepCount15Min(),
@@ -404,7 +406,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = determineBasalResult.profile.getBoolean("enableUAM"),
             A52_risk_enable = determineBasalResult.profile.getBoolean("A52_risk_enable"),
             SMBInterval = determineBasalResult.profile.getInt("SMBInterval"),
-            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB"),
+            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
             enableSMB_with_temptarget = determineBasalResult.profile.getBoolean("enableSMB_with_temptarget"),
             allowSMB_with_high_temptarget = determineBasalResult.profile.getBoolean("allowSMB_with_high_temptarget"),
             enableSMB_always = determineBasalResult.profile.getBoolean("enableSMB_always"),
@@ -424,7 +426,8 @@ class ReplayApsResultsTest @Inject constructor() {
             ketoacidosis_protection = preferences.get(BooleanKey.ApsKetoacidosisProtection),
             ketoacidosis_protection_var_strategy = preferences.get(BooleanKey.ApsKetoacidosisVarStrategy),
             ketoacidosis_protection_basal = preferences.get(IntKey.ApsKetoacidosisProtectionBasal),
-            ketoacidosis_protection_iob = 0.0
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB")
         )
         val meatData = MealData(
             carbs = determineBasalResult.mealData.getDouble("carbs"),
@@ -563,7 +566,7 @@ class ReplayApsResultsTest @Inject constructor() {
             adv_target_adjustments = false,
             exercise_mode = false,
             half_basal_exercise_target = 0,
-            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
+            activity_detection = false,
             recent_steps_5_minutes = StepService.getRecentStepCount5Min(),
             recent_steps_10_minutes = StepService.getRecentStepCount10Min(),
             recent_steps_15_minutes = StepService.getRecentStepCount15Min(),
@@ -578,7 +581,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = false,
             A52_risk_enable = false,
             SMBInterval = 0,
-            enableSMB_with_COB = false,
+            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
             enableSMB_with_temptarget = false,
             allowSMB_with_high_temptarget = false,
             enableSMB_always = false,
@@ -598,7 +601,8 @@ class ReplayApsResultsTest @Inject constructor() {
             ketoacidosis_protection = false,
             ketoacidosis_protection_var_strategy = preferences.get(BooleanKey.ApsKetoacidosisVarStrategy),
             ketoacidosis_protection_basal = 20,
-            ketoacidosis_protection_iob = 0.0
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = false
         )
         val mealData = MealData(
             carbs = determineBasalResult.mealData.getDouble("carbs"),
@@ -745,7 +749,7 @@ class ReplayApsResultsTest @Inject constructor() {
             adv_target_adjustments = determineBasalResult.profile.getBoolean("adv_target_adjustments"),
             exercise_mode = determineBasalResult.profile.getBoolean("exercise_mode"),
             half_basal_exercise_target = determineBasalResult.profile.getInt("half_basal_exercise_target"),
-            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
+            activity_detection = false,
             recent_steps_5_minutes = StepService.getRecentStepCount5Min(),
             recent_steps_10_minutes = StepService.getRecentStepCount10Min(),
             recent_steps_15_minutes = StepService.getRecentStepCount15Min(),
@@ -796,7 +800,7 @@ class ReplayApsResultsTest @Inject constructor() {
             ketoacidosis_protection = preferences.get(BooleanKey.ApsKetoacidosisProtection),
             ketoacidosis_protection_var_strategy = preferences.get(BooleanKey.ApsKetoacidosisVarStrategy),
             ketoacidosis_protection_basal = preferences.get(IntKey.ApsKetoacidosisProtectionBasal),
-            ketoacidosis_protection_iob = ketoacidosisProtectionIob
+            ketoacidosis_protection_iob = 1.0
         )
         val meatData = MealData(
             carbs = determineBasalResult.mealData.getDouble("carbs"),
