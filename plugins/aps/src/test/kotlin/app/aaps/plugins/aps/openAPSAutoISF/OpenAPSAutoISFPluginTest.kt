@@ -107,16 +107,16 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
         `when`(preferences.get(IntKey.ActivityMonitorIdleEnd)).thenReturn(6)
         `when`(preferences.get(BooleanKey.ActivityMonitorDetection)).thenReturn(false)
 
-        assertThat(openAPSAutoISFPlugin.activityMonitor(true, 80.0, 90.0)).isEqualTo(1.0) // not selected in preferences
+        assertThat(openAPSAutoISFPlugin.activityMonitor(true, 80.0, 90.0, 0)).isEqualTo(1.0) // not selected in preferences
 
         `when`(preferences.get(BooleanKey.ActivityMonitorDetection)).thenReturn(true)
-        assertThat(openAPSAutoISFPlugin.activityMonitor(true, 80.0, 90.0)).isEqualTo(1.0) // Temp Target
-        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 80.0, 90.0)).isEqualTo(1.0) // bg < target
-        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0)).isEqualTo(1.0) // bg < target
+        assertThat(openAPSAutoISFPlugin.activityMonitor(true, 80.0, 90.0, 0)).isEqualTo(1.0) // Temp Target
+        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 80.0, 90.0, 0)).isEqualTo(1.0) // bg < target
+        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0, 0)).isEqualTo(1.0) // bg < target
         //`when`(PhoneMovementDetector.phoneMoved()).thenReturn(true)
-        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0)).isEqualTo(1.0) // sleeping hours
+        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0, 0)).isEqualTo(1.0) // sleeping hours
         `when`(preferences.get(IntKey.ActivityMonitorIdleStart)).thenReturn(3)
-        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0)).isEqualTo(1.2) // inactivity
+        assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0, 0)).isEqualTo(1.2) // inactivity
         //`when`(StepService.getRecentStepCount5Min()).thenReturn(500)
         // assertThat(openAPSAutoISFPlugin.activityMonitor(false, 99.0, 90.0, 2)).isEqualTo(0.85) // activity
     }
@@ -136,16 +136,16 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
         val stepInactivityDetected = false
         `when`(preferences.get(BooleanKey.ActivityMonitorDetection)).thenReturn(false)
 
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(1.7, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(1.2) // upper limit
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.7) // lower limit
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(1.7, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(1.2) // upper limit
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.7) // lower limit
         sens = 1.5  // from Autosens
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(1.7, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(1.5) // autosens 1.5 wins
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(1.7, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(1.5) // autosens 1.5 wins
         sens = 0.5  // from Autosens
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.5) // autosens 0.5 wins
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.5) // autosens 0.5 wins
         exerciseModeActive = true
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.35) // exercise mode
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.35) // exercise mode
         stepActivityDetected = true
-        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, originSens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.35) // Activity mode
+        assertThat(openAPSAutoISFPlugin.withinISFlimits(0.5, autoIsfMin, autoIsfMax, sens, exerciseModeActive, resistanceModeActive, stepActivityDetected, stepInactivityDetected)).isEqualTo(0.35) // Activity mode
     }
 
     @Test
@@ -199,7 +199,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
-            half_basal_exercise_target = preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget),
+            half_basal_exercise_target = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget),
             activity_detection = preferences.get(BooleanKey.ActivityMonitorDetection),
             recent_steps_5_minutes = 5,
             recent_steps_10_minutes = 10,
@@ -299,7 +299,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
-            half_basal_exercise_target = preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget),
+            half_basal_exercise_target = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget),
             activity_detection = preferences.get(BooleanKey.ActivityMonitorDetection),
             recent_steps_5_minutes  = 5,
             recent_steps_10_minutes = 10,
@@ -358,7 +358,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
         `when`(glucoseStatus.corrSqu).thenReturn(0.4711)
         assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11)                             // bad parabola
         `when`(preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens)).thenReturn(true)
-        `when`(preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget)).thenReturn(160)
+        `when`(preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget)).thenReturn(160.0)
         assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11 * 2.0)                       // exercise mode w/o AutoISF
         `when`(glucoseStatus.corrSqu).thenReturn(0.95)
         `when`(glucoseStatus.glucose).thenReturn(90.0)

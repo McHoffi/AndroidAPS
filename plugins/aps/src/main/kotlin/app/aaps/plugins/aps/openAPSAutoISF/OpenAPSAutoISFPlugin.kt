@@ -337,7 +337,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             }
             autosensResult = autosensData.autosensResult
         } else autosensResult.sensResult = "autosens disabled"
-        val iobArray = iobCobCalculator.calculateIobArrayForSMB(autosensResult, SMBDefaults.exercise_mode, preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget), isTempTarget)
+        val iobArray = iobCobCalculator.calculateIobArrayForSMB(autosensResult, preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens), preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget), isTempTarget)
         val mealData = iobCobCalculator.getMealDataWithWaitingForCalculationFinish()
         val iobData = iobArray[0]
         val profile_percentage = if (profile is ProfileSealed.EPS) profile.value.originalPercentage else 100
@@ -392,7 +392,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
-            half_basal_exercise_target = preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget),
+            half_basal_exercise_target = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget),
             // mod activity mode
             activity_detection = preferences.get(BooleanKey.ActivityMonitorDetection),
             recent_steps_5_minutes  = recentSteps5Minutes,
@@ -747,7 +747,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
                 //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
                 val resistanceMax = min(1.5, preferences.get(DoubleKey.AutosensMax))  // additional safety limit
-                val halfBasalTarget = preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget)
+                val halfBasalTarget = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget)
                 val c = (halfBasalTarget - normalTarget).toDouble()
                 if (c * (c + target_bg - normalTarget) <= 0.0) {
                     sensitivityRatio = resistanceMax
@@ -1198,7 +1198,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsResistanceLowersTarget, summary = R.string.resistance_lowers_target_summary, title = R.string.resistance_lowers_target_title))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAutoIsfHighTtRaisesSens, summary = R.string.high_temptarget_raises_sensitivity_summary, title = R.string.high_temptarget_raises_sensitivity_title))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsAutoIsfLowTtLowersSens, summary = R.string.low_temptarget_lowers_sensitivity_summary, title = R.string.low_temptarget_lowers_sensitivity_title))
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsAutoIsfHalfBasalExerciseTarget, dialogMessage = R.string.half_basal_exercise_target_summary, title = R.string.half_basal_exercise_target_title))
+            addPreference(AdaptiveUnitPreference(ctx = context, unitKey = UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget, dialogMessage = R.string.half_basal_exercise_target_summary, title = R.string.half_basal_exercise_target_title))
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "activity_monitor"
                 title = rh.gs(R.string.activity_monitor_title)

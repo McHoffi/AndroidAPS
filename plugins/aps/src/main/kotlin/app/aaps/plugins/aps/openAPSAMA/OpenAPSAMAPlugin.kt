@@ -41,7 +41,6 @@ import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.LongKey
 import app.aaps.core.keys.Preferences
-import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.objects.aps.DetermineBasalResult
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.convertedToAbsolute
@@ -211,7 +210,7 @@ class OpenAPSAMAPlugin @Inject constructor(
             resistance_lowers_target = false, // not used
             adv_target_adjustments = false, // not used
             exercise_mode = false, // not used
-            half_basal_exercise_target = 0, // not used
+            half_basal_exercise_target = 160.0, // not used
             activity_detection = false, // not used
             recent_steps_5_minutes = 0, // not used
             recent_steps_10_minutes = 0, // not used

@@ -20,5 +20,6 @@ enum class UnitDoubleKey(
     OverviewLowMark("low_mark", 72.0, 25, 160, showInNsClientMode = false, hideParentScreenIfHidden = true),
     OverviewHighMark("high_mark", 180.0, 90, 250, showInNsClientMode = false),
     ApsLgsThreshold("lgsThreshold", 65.0, 60, 100, defaultedBySM = true, dependency = BooleanKey.ApsUseDynamicSensitivity),
-    ApsSmbThreshold("smbThreshold", 100.0, 72, 180, defaultedBySM = true)
+    ApsSmbThreshold("smbThreshold", 100.0, 72, 180, defaultedBySM = true),
+    ApsAutoIsfHalfBasalExerciseTarget("half_basal_exercise_target", 160.0, 120, 200, defaultedBySM = true)
 }

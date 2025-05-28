@@ -102,7 +102,7 @@ fun TB.iobCalc(
     profile: Profile,
     lastAutosensResult: AutosensResult,
     exerciseMode: Boolean,
-    halfBasalExerciseTarget: Int,
+    halfBasalExerciseTarget: Double,
     isTempTarget: Boolean,
     insulinInterface: Insulin
 ): IobTotal {
