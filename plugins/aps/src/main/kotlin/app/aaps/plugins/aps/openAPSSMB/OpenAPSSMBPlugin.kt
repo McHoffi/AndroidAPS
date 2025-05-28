@@ -471,7 +471,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
             // high_temptarget_raises_sensitivity = false,
             high_temptarget_raises_sensitivity = preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens),
             // mod finish
-            low_temptarget_lowers_sensitivity = false,
+            low_temptarget_lowers_sensitivity = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens),
             sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget),
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
