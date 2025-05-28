@@ -747,8 +747,9 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
                 //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
                 val resistanceMax = min(1.5, preferences.get(DoubleKey.AutosensMax))  // additional safety limit
-                val halfBasalTarget = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget)
-                val c = (halfBasalTarget - normalTarget).toDouble()
+                val mgdlHalfBasalTarget = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget) * if (profileFunction.getUnits() == GlucoseUnit.MMOL) GlucoseUnit.MMOLL_TO_MGDL else 1.0
+
+                val c = (mgdlHalfBasalTarget - normalTarget).toDouble()
                 if (c * (c + target_bg - normalTarget) <= 0.0) {
                     sensitivityRatio = resistanceMax
                     // consoleError.add("Sensitivity decrease for temp target of $target_bg limited by Autosens_max; ")

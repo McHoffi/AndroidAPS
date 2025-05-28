@@ -1,5 +1,6 @@
 package app.aaps.plugins.aps.openAPSSMB
 
+import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.CurrentTemp
@@ -9,6 +10,7 @@ import app.aaps.core.interfaces.aps.MealData
 import app.aaps.core.interfaces.aps.OapsProfile
 import app.aaps.core.interfaces.aps.Predictions
 import app.aaps.core.interfaces.aps.RT
+import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
@@ -30,7 +32,8 @@ import kotlin.math.roundToInt
 class DetermineBasalSMB @Inject constructor(
     private val profileUtil: ProfileUtil,
     private val fabricPrivacy: FabricPrivacy,
-    private val preferences: Preferences
+    private val preferences: Preferences,
+    private val profileFunction: ProfileFunction
 ) {
 
     private val consoleError = mutableListOf<String>()
@@ -311,7 +314,7 @@ class DetermineBasalSMB @Inject constructor(
         val high_temptarget_raises_sensitivity = profile.exercise_mode || profile.high_temptarget_raises_sensitivity
         val normalTarget = 100 // evaluate high/low temptarget against 100, not scheduled target (which might change)
         // when temptarget is 160 mg/dL, run 50% basal (120 = 75%; 140 = 60%),  80 mg/dL with low_temptarget_lowers_sensitivity would give 1.5x basal, but is limited to autosens_max (1.2x by default)
-        val halfBasalTarget = profile.half_basal_exercise_target
+        val mgdlHalfBasalTarget = profile.half_basal_exercise_target * if (profileFunction.getUnits() == GlucoseUnit.MMOL) GlucoseUnit.MMOLL_TO_MGDL else 1.0
 
         if (dynIsfMode) {
             consoleError.add("---------------------------------------------------------")
@@ -325,7 +328,7 @@ class DetermineBasalSMB @Inject constructor(
             // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
             // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
             //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
-            val c = (halfBasalTarget - normalTarget).toDouble()
+            val c = (mgdlHalfBasalTarget - normalTarget).toDouble()
             sensitivityRatio = c / (c + target_bg - normalTarget)
             // limit sensitivityRatio to profile.autosens_max (1.2x by default)
             // mod limit to 1.3 max
