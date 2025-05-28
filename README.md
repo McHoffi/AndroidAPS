@@ -10,7 +10,7 @@ This version includes the main modifications from sport-changes v3.2.0.4:
 (a) Reduces basal if IOB ≈ no insulin for 1h, or
 (b) Ensures a minimum basal (e.g., 20%) to avoid 0% TBR.
 - Additional hypo strategy: hypoTT + 50% TBR for 60 min.
-- Reduced SMB: no SMB if BG < 100 mg/dl.
+- Possibility to reduce SMB: Set a threshold value (default: 100 mg/dl) below which no SMBs are released
 - Temp targets up to 220 mg/dl (12 mmol/l) allowed.
 - Layout fixes for small devices.
 - autoISF no longer requires engineering mode.
