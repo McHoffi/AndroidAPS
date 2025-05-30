@@ -225,7 +225,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = determineBasalResult.profile.getBoolean("enableUAM"),
             A52_risk_enable = determineBasalResult.profile.getBoolean("A52_risk_enable"),
             SMBInterval = determineBasalResult.profile.getInt("SMBInterval"),
-            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = determineBasalResult.profile.getBoolean("enableSMB_with_temptarget"),
             allowSMB_with_high_temptarget = determineBasalResult.profile.getBoolean("allowSMB_with_high_temptarget"),
             enableSMB_always = determineBasalResult.profile.getBoolean("enableSMB_always"),
@@ -406,7 +406,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = determineBasalResult.profile.getBoolean("enableUAM"),
             A52_risk_enable = determineBasalResult.profile.getBoolean("A52_risk_enable"),
             SMBInterval = determineBasalResult.profile.getInt("SMBInterval"),
-            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = determineBasalResult.profile.getBoolean("enableSMB_with_temptarget"),
             allowSMB_with_high_temptarget = determineBasalResult.profile.getBoolean("allowSMB_with_high_temptarget"),
             enableSMB_always = determineBasalResult.profile.getBoolean("enableSMB_always"),
@@ -581,7 +581,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = false,
             A52_risk_enable = false,
             SMBInterval = 0,
-            thresholdSMB = preferences.get(UnitDoubleKey.ApsSmbThreshold),
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = false,
             allowSMB_with_high_temptarget = false,
             enableSMB_always = false,
@@ -764,7 +764,7 @@ class ReplayApsResultsTest @Inject constructor() {
             enableUAM = determineBasalResult.profile.getBoolean("enableUAM"),
             A52_risk_enable = determineBasalResult.profile.getBoolean("A52_risk_enable"),
             SMBInterval = determineBasalResult.profile.getInt("SMBInterval"),
-            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB"),
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = determineBasalResult.profile.getBoolean("enableSMB_with_temptarget"),
             allowSMB_with_high_temptarget = determineBasalResult.profile.getBoolean("allowSMB_with_high_temptarget"),
             enableSMB_always = determineBasalResult.profile.getBoolean("enableSMB_always"),
@@ -800,7 +800,8 @@ class ReplayApsResultsTest @Inject constructor() {
             ketoacidosis_protection = preferences.get(BooleanKey.ApsKetoacidosisProtection),
             ketoacidosis_protection_var_strategy = preferences.get(BooleanKey.ApsKetoacidosisVarStrategy),
             ketoacidosis_protection_basal = preferences.get(IntKey.ApsKetoacidosisProtectionBasal),
-            ketoacidosis_protection_iob = 1.0
+            ketoacidosis_protection_iob = 1.0,
+            enableSMB_with_COB = determineBasalResult.profile.getBoolean("enableSMB_with_COB")
         )
         val meatData = MealData(
             carbs = determineBasalResult.mealData.getDouble("carbs"),

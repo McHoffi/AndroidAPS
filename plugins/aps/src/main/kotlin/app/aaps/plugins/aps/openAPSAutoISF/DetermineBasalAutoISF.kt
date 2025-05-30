@@ -8,7 +8,6 @@ import app.aaps.core.interfaces.aps.CurrentTemp
 import app.aaps.core.interfaces.aps.GlucoseStatus
 import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.interfaces.aps.MealData
-import app.aaps.core.interfaces.aps.OapsProfile
 import app.aaps.core.interfaces.aps.OapsProfileAutoIsf
 import app.aaps.core.interfaces.aps.Predictions
 import app.aaps.core.interfaces.aps.RT
@@ -965,10 +964,10 @@ class DetermineBasalAutoISF @Inject constructor(
             enableSMB = false
         }
 
-        // mod no smb if bg < 100
-        if (enableSMB && bg < 100) {
-            consoleError.add("BG < 100 - disabling SMB")
-            rT.reason.append("BG < 100 - disabling SMB")
+        // mod no smb if bg < threshold
+        if (enableSMB && bg < profile.thresholdSMB) {
+            consoleError.add("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
+            rT.reason.append("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
             enableSMB = false
         }
         // end mod

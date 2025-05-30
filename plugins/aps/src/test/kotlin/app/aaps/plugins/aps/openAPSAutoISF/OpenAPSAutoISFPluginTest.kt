@@ -192,10 +192,9 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             autosens_adjust_targets = false, // not used
             max_daily_safety_multiplier = preferences.get(DoubleKey.ApsMaxDailyMultiplier),
             current_basal_safety_multiplier = preferences.get(DoubleKey.ApsMaxCurrentBasalMultiplier),
-            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             high_temptarget_raises_sensitivity = false,
-            low_temptarget_lowers_sensitivity = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens), // was false,
-            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget),
+            low_temptarget_lowers_sensitivity = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens),
+            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget), // was false,
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
@@ -215,7 +214,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             enableUAM = false,
             A52_risk_enable = SMBDefaults.A52_risk_enable,
             SMBInterval = preferences.get(IntKey.ApsMaxSmbFrequency),
-            enableSMB_with_COB = true,
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = true,
             allowSMB_with_high_temptarget = false,
             enableSMB_always = true,
@@ -228,6 +227,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             temptargetSet = true,
             autosens_max = preferences.get(DoubleKey.AutosensMax),
             out_units = "mg/dl",
+            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 111.1,
             autoISF_version = "3.0.3",
             enable_autoISF = true,
@@ -250,7 +250,8 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             ketoacidosis_protection = false,
             ketoacidosis_protection_var_strategy = false,
             ketoacidosis_protection_basal = 20,
-            ketoacidosis_protection_iob = 0.0
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = true
         )
         assertThat(openAPSAutoISFPlugin.loop_smb(false, profile, 11.0, false, 11.1)).isEqualTo("AAPS")
         `when`(preferences.get(BooleanKey.ApsAutoIsfSmbOnEvenTarget)).thenReturn(true)
@@ -292,10 +293,9 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             autosens_adjust_targets = false, // not used
             max_daily_safety_multiplier = preferences.get(DoubleKey.ApsMaxDailyMultiplier),
             current_basal_safety_multiplier = preferences.get(DoubleKey.ApsMaxCurrentBasalMultiplier),
-            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             high_temptarget_raises_sensitivity = false,
-            low_temptarget_lowers_sensitivity = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens), // was false,
-            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget),
+            low_temptarget_lowers_sensitivity = preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens),
+            sensitivity_raises_target = preferences.get(BooleanKey.ApsSensitivityRaisesTarget), // was false,
             resistance_lowers_target = preferences.get(BooleanKey.ApsResistanceLowersTarget),
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
@@ -315,7 +315,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             enableUAM = false,
             A52_risk_enable = SMBDefaults.A52_risk_enable,
             SMBInterval = preferences.get(IntKey.ApsMaxSmbFrequency),
-            enableSMB_with_COB = true,
+            thresholdSMB = 100.0,
             enableSMB_with_temptarget = true,
             allowSMB_with_high_temptarget = false,
             enableSMB_always = true,
@@ -328,6 +328,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             temptargetSet = true,
             autosens_max = preferences.get(DoubleKey.AutosensMax),
             out_units = "mg/dl",
+            lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 47.11,
             autoISF_version = "3.0.3",
             enable_autoISF = false,
@@ -350,7 +351,8 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             ketoacidosis_protection = false,
             ketoacidosis_protection_var_strategy = false,
             ketoacidosis_protection_basal = 20,
-            ketoacidosis_protection_iob = 0.0
+            ketoacidosis_protection_iob = 0.0,
+            enableSMB_with_COB = true
         )
         assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11)                             // inactive
         `when`(oapsProfile.enable_autoISF).thenReturn(true)
