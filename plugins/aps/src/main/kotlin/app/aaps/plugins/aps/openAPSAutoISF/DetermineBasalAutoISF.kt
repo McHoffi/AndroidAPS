@@ -965,7 +965,8 @@ class DetermineBasalAutoISF @Inject constructor(
         }
 
         // mod no smb if bg < threshold
-        if (enableSMB && bg < profile.thresholdSMB) {
+        val mgdlSmbThreshold = profile.thresholdSMB * if (profileFunction.getUnits() == GlucoseUnit.MMOL) GlucoseUnit.MMOLL_TO_MGDL else 1.0
+        if (enableSMB && bg < mgdlSmbThreshold) {
             consoleError.add("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
             rT.reason.append("BG < ${convert_bg(profile.thresholdSMB)} - disabling SMB")
             enableSMB = false
