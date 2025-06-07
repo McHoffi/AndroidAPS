@@ -159,6 +159,7 @@ class CarbsDialog : DialogFragmentWithDate() {
             savedInstanceState?.getDouble("carbs")
                 ?: 0.0, -maxCarbs, maxCarbs, 1.0, DecimalFormat("0"), false, binding.okcancel.ok, textWatcher
         )
+
         val plus1text = toSignedString(preferences.get(IntKey.OverviewCarbsButtonIncrement1))
         binding.plus1.text = plus1text
         binding.plus1.contentDescription = rh.gs(app.aaps.core.ui.R.string.carbs) + " " + plus1text
@@ -167,7 +168,6 @@ class CarbsDialog : DialogFragmentWithDate() {
             validateInputs()
             binding.carbs.announceValue()
         }
-
         val plus2text = toSignedString(preferences.get(IntKey.OverviewCarbsButtonIncrement2))
         binding.plus2.text = plus2text
         binding.plus2.contentDescription = rh.gs(app.aaps.core.ui.R.string.carbs) + " " + plus2text
@@ -194,7 +194,7 @@ class CarbsDialog : DialogFragmentWithDate() {
 
         iobCobCalculator.ads.actualBg()?.let { bgReading ->
             if (bgReading.recalculated < 72)
-                binding.hypoTt.isChecked = true
+                binding.hypoAction.isChecked = true
         }
         binding.hypoTt.setOnClickListener {
             binding.activityTt.isChecked = false
