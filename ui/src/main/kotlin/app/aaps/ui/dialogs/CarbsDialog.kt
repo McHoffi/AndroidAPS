@@ -293,7 +293,7 @@ class CarbsDialog : DialogFragmentWithDate() {
                 rh.gs(R.string.temp_target_short) + ": " + (decimalFormatter.to1Decimal(hypoTT) + " " + unitLabel + " (" + rh.gs(
                     app.aaps.core.ui.R.string.format_mins,
                     hypoTTDuration
-                ) + ")  + TBR: 50% (60 min)").formatColor(
+                ) + ")  + TBR: 50% (45 min)").formatColor(
                     context,
                     rh,
                     app.aaps.core.ui.R.attr.tempTargetConfirmation
@@ -364,7 +364,7 @@ class CarbsDialog : DialogFragmentWithDate() {
                         loop.suspendLoop(T.hours(1).mins().toInt(), Action.SUSPEND, Sources.LoopDialog, listValues = listOf(ValueWithUnit.Hour(1)))
                         val percent = 50
                         val absolute = profile.getBasal() * 0.5
-                        val durationInMinutes = 60
+                        val durationInMinutes = 45
                         isPercentPump = activePlugin.activePump.pumpDescription.tempBasalStyle and PumpDescription.PERCENT == PumpDescription.PERCENT
                         val callback: Callback = object : Callback() {
                             override fun run() {
