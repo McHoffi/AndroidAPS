@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--Autotune-->
-    <string name="key_autotune_last_run" translatable="false">key_autotune_last_run</string>
-
     <string name="dynisf_adjust_sensitivity">Enable TDD based sensitivity ratio for basal and glucose target modification</string>
     <string name="dynisf_adjust_sensitivity_summary">Uses the last 24h TDD/7D TDD to calculate sensitivity ratio used for increasing or decreasing basal rate, and also adjust glucose target if these options are enabled, in the same way Autosens does. It is recommended to start with this option turned off</string>
     <string name="dyn_isf_adjust_title" formatted="false">DynamicISF Adjustment Factor %</string>
@@ -106,8 +104,6 @@
     <string name="insulin_peak">Peak</string>
 
     <!--    Loop -->
-    <string name="key_smb_enable_carbs_suggestions_threshold" translatable="false">smb_enable_carbs_suggestions_threshold</string>
-
     <string name="run_now">Run now</string>
     <string name="smb_frequency_exceeded">A bolus was delivered within the last 3 minutes, skipping SMB</string>
     <string name="pump_not_initialized">Pump not initialized!</string>
@@ -253,8 +249,15 @@
     <string name="inactivity_idle_start_summary">Start hour when inactivity monitoring is disabled for sleep\nDefault in 24h notation is 22</string>
     <string name="inactivity_idle_end_title">End hour for disabling inactivity monitoring</string>
     <string name="inactivity_idle_end_summary">End hour of sleep when inactivity monitoring is re-enabled again\nDefault in 24h notation is 6</string>
+    <string name="steps_graph_from_smartphone_title">Steps graph from smartphone sensor</string>
+    <string name="steps_graph_from_smartphone_summary">Default: true\notherwise from watch sensor</string>
+
 
     <!-- Libre special    -->
+    <string name="calibration_stops_smb_title" translatable="false">Disable SMB and AutoISF weights for 20m after fresh calibration</string>
+    <string name="calibration_stops_smb_summary" translatable="false">Trigger this once before changing calibration settings</string>
+    <string name="calibration_enable_smb_title" translatable="false">Re-enable SMB and AutoISF weights earlier anyway</string>
+    <string name="calibration_enable_smb_summary" translatable="false">Activate this when suppressing is no longer required because calibration transition was smooth</string>
     <string name="fslCal_Offset_title">Offset of Libre calibration versus finger like in xDrip</string>
     <string name="fslCal_Offset_summary">OFFSET value as in calibration formula\nLibre_calibrated = OFFSET + slope * Libre_raw</string>
     <string name="fslCal_Slope_title">Slope of Libre calibration versus finger like in xDrip</string>
@@ -268,10 +271,14 @@
     <string name="fsl_exp1_factor_title">Libre 1st order exponential smoothing factor</string>
     <string name="fsl_exp1_factor_summary">Used without xDrip 1 minute smoothing in between\n0.0 : max. effect\n1.0 : min. effect</string>
     <string name="key_fsl_exp1_correction" translatable="false">fslExp1SmoothCorrection</string>
+    <!--
     <string name="fsl_exp1_correction_title">Libre 1st order exponential smoothing correction</string>
     <string name="fsl_exp1_correction_summary">Used without xDrip 1 minute smoothing in between; takes back part of the factor effect\n0.0 : min. effect\n1.0 : max. effect</string>
+    -->
     <string name="key_fsl_exp1_max_smooth_gap" translatable="false">fslExp1SmoothGap</string>
     <string name="fsl_exp1_max_smooth_gap_title">max. minutes of gap to smooth</string>
     <string name="fsl_exp1_max_smooth_gap_summary">The longer the gap the less smoothing effect; uses last value before the gap if longer than this</string>
+    <string name="MaintenanceCleanupDays_title">How many days to keep on DB cleanup</string>
+    <string name="MaintenanceCleanupDays_summary">When using Libre 1 minute CGM define a shorter period for DB cleanup like 15 days or even less to improve performance.\nNote that AAPS standard is 93 days</string>
 
 </resources>

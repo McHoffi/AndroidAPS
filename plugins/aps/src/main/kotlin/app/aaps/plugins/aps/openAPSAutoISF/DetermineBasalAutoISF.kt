@@ -16,7 +16,7 @@ import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
-import app.aaps.core.keys.Preferences
+import app.aaps.core.keys.interfaces.Preferences
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -253,7 +253,7 @@ class DetermineBasalAutoISF @Inject constructor(
         consoleLog.clear()
         var rT = RT(
             algorithm = APSResult.Algorithm.AUTO_ISF,
-            runningDynamicIsf = autoIsfMode,
+            runningAutoIsf = true,
             timestamp = currentTime,
             consoleLog = consoleLog,
             consoleError = consoleError
@@ -352,10 +352,10 @@ class DetermineBasalAutoISF @Inject constructor(
                 }
                 consoleError.add("Sensitivity ratio set to $sensitivityRatio based on temp target of $target_bg; ")
             } else if ( stepActivityDetected ) {
-                sensitivityRatio = activityRatio;
+                sensitivityRatio = activityRatio
                 // origin_sens = "from activity detection";
             } else if ( stepInactivityDetected ) {
-                sensitivityRatio = activityRatio;
+                sensitivityRatio = activityRatio
                 // origin_sens = "from inactivity detection";
             }
         } else {
@@ -518,7 +518,7 @@ class DetermineBasalAutoISF @Inject constructor(
 
         rT = RT(
             algorithm = APSResult.Algorithm.AUTO_ISF,
-            runningDynamicIsf = autoIsfMode,
+            runningAutoIsf = true,
             timestamp = currentTime,
             bg = bg,
             tick = tick,
@@ -999,7 +999,7 @@ class DetermineBasalAutoISF @Inject constructor(
             rT.reason.append(" and minDelta ${convert_bg(minDelta)} > expectedDelta ${convert_bg(expectedDelta)}; ")
             // predictive low glucose suspend mode: BG is / is projected to be < threshold
         } else if (bg < threshold || minGuardBG < threshold) {
-            rT.reason.append("minGuardBG " + convert_bg(minGuardBG) + "<" + convert_bg(threshold))
+            rT.reason.append("minGuardBG ${convert_bg(minGuardBG)} < ${convert_bg(threshold)}")
             bgUndershoot = target_bg - minGuardBG
             val worstCaseInsulinReq = bgUndershoot / sens
             var durationReq = round(60 * worstCaseInsulinReq / profile.current_basal)

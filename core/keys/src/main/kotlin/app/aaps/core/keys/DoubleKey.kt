@@ -1,5 +1,8 @@
 package app.aaps.core.keys
 
+import app.aaps.core.keys.interfaces.BooleanPreferenceKey
+import app.aaps.core.keys.interfaces.DoublePreferenceKey
+
 enum class DoubleKey(
     override val key: String,
     override val defaultValue: Double,
@@ -12,7 +15,8 @@ enum class DoubleKey(
     override val showInPumpControlMode: Boolean = true,
     override val dependency: BooleanPreferenceKey? = null,
     override val negativeDependency: BooleanPreferenceKey? = null,
-    override val hideParentScreenIfHidden: Boolean = false
+    override val hideParentScreenIfHidden: Boolean = false,
+    override val exportable: Boolean = true
 ) : DoublePreferenceKey {
 
     OverviewInsulinButtonIncrement1("insulin_button_increment_1", 0.5, -5.0, 5.0, defaultedBySM = true, dependency = BooleanKey.OverviewShowInsulinButton),
@@ -43,14 +47,14 @@ enum class DoubleKey(
     ApsAutoIsfSmbDeliveryRatioBgRange("openapsama_smb_delivery_ratio_bg_range", 0.0, 0.0, 100.0, defaultedBySM = true),
     ApsAutoIsfPpWeight("pp_ISF_weight", 0.0, 0.0, 1.0, defaultedBySM = true),
     ApsAutoIsfDuraWeight("dura_ISF_weight", 0.0, 0.0, 3.0, defaultedBySM = true),
-    ApsAutoIsfSmbDeliveryRatio("openapsama_smb_delivery_ratio", 0.5, 0.5, 1.0, defaultedBySM = true),
-    ApsAutoIsfSmbDeliveryRatioMin("openapsama_smb_delivery_ratio_min", 0.5, 0.5, 1.0, defaultedBySM = true),
+    ApsAutoIsfSmbDeliveryRatio("openapsama_smb_delivery_ratio", 0.2, 0.1, 1.0, defaultedBySM = true),
+    ApsAutoIsfSmbDeliveryRatioMin("openapsama_smb_delivery_ratio_min", 0.5, 0.1, 1.0, defaultedBySM = true),
     ApsAutoIsfSmbDeliveryRatioMax("openapsama_smb_delivery_ratio_max", 0.5, 0.5, 1.0, defaultedBySM = true),
     ApsAutoIsfSmbMaxRangeExtension("openapsama_smb_max_range_extension", 1.0, 1.0, 5.0, defaultedBySM = true),
-    FslCalOffset("fslCal_Offset", 0.0, -50.0, 50.0, defaultedBySM = true),    // TODO: resolve UnitDouble problem
-    FslCalSlope("fslCal_Slope", 1.0, 0.5, 1.5, defaultedBySM = true),
-    FslSmoothAlpha("fsl_exp1_factor", 1.0, 0.01, 1.0, defaultedBySM = true),
-    FslSmoothCorrection("fsl_exp1_correction", 0.0, 0.0, 1.0, defaultedBySM = true),
+    FslCalOffset("fslCal_Offset", 0.0, -50.0, 50.0, defaultedBySM = true),      //dependency = BooleanKey.ApsCalibrationTrigger),
+    FslCalSlope("fslCal_Slope", 1.0, 0.5, 1.5, defaultedBySM = true),           //dependency = BooleanKey.ApsCalibrationTrigger),
+    FslSmoothAlpha("fsl_exp1_factor", 1.0, 0.1, 1.0, defaultedBySM = true),
+    //FslSmoothCorrection("fsl_exp1_correction", 0.0, 0.0, 1.0, defaultedBySM = true),
     FslLastRaw("fsl_last_raw", -1.0, 40.0, 400.0, defaultedBySM = true),
     FslLastSmooth("fsl_last_smooth", -1.0, 40.0, 400.0, defaultedBySM = true),
 

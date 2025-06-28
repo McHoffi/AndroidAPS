@@ -1,8 +1,9 @@
 package app.aaps.plugins.aps.openAPSAutoISF
 
-import android.content.SharedPreferences
+import android.icu.util.Calendar
 import app.aaps.core.data.aps.SMBDefaults
 import app.aaps.core.interfaces.aps.OapsProfileAutoIsf
+import app.aaps.core.interfaces.automation.AutomationStateInterface
 import app.aaps.core.interfaces.bgQualityCheck.BgQualityCheck
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.db.PersistenceLayer
@@ -13,17 +14,15 @@ import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.UnitDoubleKey
-import app.aaps.core.validators.preferences.AdaptiveDoublePreference
-import app.aaps.core.validators.preferences.AdaptiveIntPreference
-import app.aaps.core.validators.preferences.AdaptiveIntentPreference
-import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
-import app.aaps.core.validators.preferences.AdaptiveUnitPreference
+import app.aaps.plugins.aps.openAPSSMB.PhoneMovementDetector
+import app.aaps.plugins.aps.openAPSSMB.StepService
 import app.aaps.shared.tests.TestBaseWithProfile
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
+import javax.inject.Inject
 
 class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
 
@@ -31,41 +30,11 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
     @Mock lateinit var persistenceLayer: PersistenceLayer
     @Mock lateinit var glucoseStatusProvider: GlucoseStatusProvider
     @Mock lateinit var determineBasalSMB: DetermineBasalAutoISF
-    @Mock lateinit var sharedPrefs: SharedPreferences
     @Mock lateinit var bgQualityCheck: BgQualityCheck
     @Mock lateinit var profiler: Profiler
     @Mock lateinit var uiInteraction: UiInteraction
+    @Mock lateinit var automationStateService: AutomationStateInterface
     private lateinit var openAPSAutoISFPlugin: OpenAPSAutoISFPlugin
-
-    init {
-        addInjector {
-            if (it is AdaptiveDoublePreference) {
-                it.profileUtil = profileUtil
-                it.preferences = preferences
-                it.sharedPrefs = sharedPrefs
-            }
-            if (it is AdaptiveIntPreference) {
-                it.profileUtil = profileUtil
-                it.preferences = preferences
-                it.sharedPrefs = sharedPrefs
-                it.config = config
-            }
-            if (it is AdaptiveIntentPreference) {
-                it.preferences = preferences
-                it.sharedPrefs = sharedPrefs
-            }
-            if (it is AdaptiveUnitPreference) {
-                it.profileUtil = profileUtil
-                it.preferences = preferences
-                it.sharedPrefs = sharedPrefs
-            }
-            if (it is AdaptiveSwitchPreference) {
-                it.preferences = preferences
-                it.sharedPrefs = sharedPrefs
-                it.config = config
-            }
-        }
-    }
 
     @BeforeEach fun prepare() {
         openAPSAutoISFPlugin = OpenAPSAutoISFPlugin(
@@ -199,8 +168,8 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
             half_basal_exercise_target = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget),
-            activity_detection = preferences.get(BooleanKey.ActivityMonitorDetection),
-            recent_steps_5_minutes = 5,
+            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
+            recent_steps_5_minutes  = 5,
             recent_steps_10_minutes = 10,
             recent_steps_15_minutes = 15,
             recent_steps_30_minutes = 30,
@@ -229,8 +198,8 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             out_units = "mg/dl",
             lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 111.1,
-            autoISF_version = "3.0.3",
-            enable_autoISF = true,
+            autoISF_version = "3.1.0",
+            enable_autoISF = false,
             autoISF_max = 1.5,
             autoISF_min = 0.7,
             bgAccel_ISF_weight = 0.0,
@@ -300,7 +269,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             adv_target_adjustments = SMBDefaults.adv_target_adjustments,
             exercise_mode = SMBDefaults.exercise_mode,
             half_basal_exercise_target = preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget),
-            activity_detection = preferences.get(BooleanKey.ActivityMonitorDetection),
+            activity_detection = preferences.get(BooleanKey.ApsActivityDetection),
             recent_steps_5_minutes  = 5,
             recent_steps_10_minutes = 10,
             recent_steps_15_minutes = 15,
@@ -330,7 +299,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             out_units = "mg/dl",
             lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 47.11,
-            autoISF_version = "3.0.3",
+            autoISF_version = "3.1.0",
             enable_autoISF = false,
             autoISF_max = 1.5,
             autoISF_min = 0.7,

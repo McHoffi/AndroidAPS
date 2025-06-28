@@ -1,5 +1,7 @@
 package app.aaps.implementation.iob
 
+//import app.aaps.implementation.R
+//import app.aaps.core.keys.DoubleKey
 import app.aaps.core.interfaces.aps.GlucoseStatus
 import app.aaps.core.interfaces.iob.GlucoseStatusProvider
 import app.aaps.core.interfaces.iob.IobCobCalculator
@@ -7,6 +9,8 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.DecimalFormatter
+import app.aaps.core.keys.IntKey
+import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.implementation.extensions.asRounded
 import app.aaps.implementation.extensions.log
 import dagger.Reusable
@@ -14,12 +18,6 @@ import javax.inject.Inject
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
-//import app.aaps.implementation.R
-import app.aaps.core.interfaces.sharedPreferences.SP
-//import app.aaps.core.keys.DoubleKey
-import app.aaps.core.keys.IntKey
-import app.aaps.core.keys.Preferences
-
 
 @Reusable
 class GlucoseStatusProviderImpl @Inject constructor(
@@ -28,7 +26,6 @@ class GlucoseStatusProviderImpl @Inject constructor(
     private val dateUtil: DateUtil,
     private val decimalFormatter: DecimalFormatter
 ) : GlucoseStatusProvider {
-    @Inject lateinit var sp: SP
     @Inject lateinit var preferences: Preferences
 
 
@@ -60,7 +57,7 @@ class GlucoseStatusProviderImpl @Inject constructor(
         val fslValue = fsl.raw
         val fslRaw = fsl.noise
         val fslSmooth = fsl.value
-        var fslReally = cgm.text=="Libre2" || cgm.text=="Libre2 Native" || cgm.text=="Libre3"
+        var fslReally = cgm.text=="Libre2" || cgm.text=="Libre2 Native" || cgm.text=="Libre3" || cgm.text=="G7"
         //fslReally = true    // "RANDOM" while testing with virtual phone in AS or until xDrip/Juggluco label=="Libre2/3" is implemented
         var fslMinDur = 15  // default for 5m CGM
         var change: Double
@@ -91,7 +88,7 @@ class GlucoseStatusProviderImpl @Inject constructor(
 
         // Use the latest sgv value in the now calculations
         for (i in 1 until sizeRecords) {
-            if (data[i].value > 39 && !data[i].filledGap) {   // if (data[i].recalculated > 38) {
+            if (data[i].recalculated > 39) {
                 val then = data[i]
                 val thenDate = then.timestamp
                 val valueAgo = then.value
@@ -181,7 +178,7 @@ class GlucoseStatusProviderImpl @Inject constructor(
                 if ( orig[0].timestamp - orig[2].timestamp < 3 * 60000 ) {
                     use1MinuteRaw = true
                     sizeRecords = orig.size
-                    fslMinDur = preferences.get(IntKey.FslMinFitMinutes)
+                    fslMinDur = 10      //preferences.get(IntKey.FslMinFitMinutes)
                 }
             }
         }
@@ -224,7 +221,7 @@ class GlucoseStatusProviderImpl @Inject constructor(
                     val ti = (thenDate - time0) / 1000.0 / scaleTime
                     if (-ti * scaleTime > 47 * 60) {                       // skip records older than 47.5 minutes
                         break
-                    } else if (ti < tiLast - 7.5 * 60 / scaleTime) {       // stop scan if a CGM gap > 7.5 minutes is detected
+                    } else if (ti < tiLast - 11.0 * 60 / scaleTime) {      // stop scan if a CGM gap > 11 minutes is detected
                         if (i < 3 || -ti * scaleTime < fslMinDur * 60) {   // history too short for fit
                             duraP = -tiLast * scaleTime / 60.0
                             deltaPl = 0.0

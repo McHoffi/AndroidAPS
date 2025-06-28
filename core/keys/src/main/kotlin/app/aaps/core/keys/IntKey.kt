@@ -1,5 +1,8 @@
 package app.aaps.core.keys
 
+import app.aaps.core.keys.interfaces.BooleanPreferenceKey
+import app.aaps.core.keys.interfaces.IntPreferenceKey
+
 enum class IntKey(
     override val key: String,
     override val defaultValue: Int,
@@ -13,7 +16,8 @@ enum class IntKey(
     override val dependency: BooleanPreferenceKey? = null,
     override val negativeDependency: BooleanPreferenceKey? = null,
     override val hideParentScreenIfHidden: Boolean = false,
-    override val engineeringModeOnly: Boolean = false
+    override val engineeringModeOnly: Boolean = false,
+    override val exportable: Boolean = true
 ) : IntPreferenceKey {
 
     OverviewCarbsButtonIncrement1("carbs_button_increment_1", 5, -50, 50, defaultedBySM = true, dependency = BooleanKey.OverviewShowCarbsButton),
@@ -51,6 +55,7 @@ enum class IntKey(
     ApsAutoIsfIobThPercent("iob_threshold_percent", 100, 10, 100, defaultedBySM = true),
     FslMinFitMinutes("fslMinMinutes", 20, 3, 20, defaultedBySM = true),
     FslMaxSmoothGap("Exp1SmoothGap", 20, 10, 60, defaultedBySM = true),
+    FslCalibrationDuration("Calibration_Duration", 20, 20, 20, defaultedBySM = true),   // effectively frozen
 
     ActivityMonitorIdleStart("inactivity_idle_start", 22, 0, 23, defaultedBySM=true, dependency = BooleanKey.ActivityMonitorOvernight),
     ActivityMonitorIdleEnd("inactivity_idle_end", 6, 0, 23, defaultedBySM=true, dependency = BooleanKey.ActivityMonitorOvernight),
@@ -58,6 +63,7 @@ enum class IntKey(
     ApsDynIsfAdjustmentFactor("DynISFAdjust", 100, 1, 300, dependency = BooleanKey.ApsUseDynamicSensitivity),
     AutosensPeriod("openapsama_autosens_period", 24, 4, 24, calculatedDefaultValue = true),
     MaintenanceLogsAmount("maintenance_logs_amount", 2, 1, 10, defaultedBySM = true),
+    MaintenanceCleanupDays("maintenance_cleanup_days", 93, 7, 93, defaultedBySM = true),
     AlertsStaleDataThreshold("missed_bg_readings_threshold", 30, 15, 10000, defaultedBySM = true, dependency = BooleanKey.AlertMissedBgReading),
     AlertsPumpUnreachableThreshold("pump_unreachable_threshold", 30, 30, 300, defaultedBySM = true, dependency = BooleanKey.AlertPumpUnreachable),
     InsulinOrefPeak("insulin_oref_peak", 75, 35, 120, hideParentScreenIfHidden = true),
@@ -71,7 +77,6 @@ enum class IntKey(
     SmsRemoteBolusDistance("smscommunicator_remotebolusmindistance", 15, 3, 60),
 
     BgSourceRandomInterval("randombg_interval_min", 5, 1, 15, defaultedBySM = true),
-    GarminLocalHttpPort("communication_http_port", 28891, 1001, 65535, defaultedBySM = true, hideParentScreenIfHidden = true),
     NsClientAlarmStaleData("ns_alarm_stale_data_value", 16, 15, 120),
     NsClientUrgentAlarmStaleData("ns_alarm_urgent_stale_data_value", 31, 30, 180),
 }

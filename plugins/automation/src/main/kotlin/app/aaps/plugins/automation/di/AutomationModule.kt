@@ -6,12 +6,13 @@ import app.aaps.plugins.automation.AutomationFragment
 import app.aaps.plugins.automation.AutomationPlugin
 import app.aaps.plugins.automation.actions.Action
 import app.aaps.plugins.automation.actions.ActionAlarm
+import app.aaps.plugins.automation.actions.ActionSettingsExport
 import app.aaps.plugins.automation.actions.ActionAutoisfDisable
 import app.aaps.plugins.automation.actions.ActionAutoisfEnable
 import app.aaps.plugins.automation.actions.ActionCarePortalEvent
 import app.aaps.plugins.automation.actions.ActionDummy
 import app.aaps.plugins.automation.actions.ActionLoopDisable
-import app.aaps.plugins.automation.actions.ActionLoopEnable
+import app.aaps.plugins.automation.actions.ActionLoopClosed
 import app.aaps.plugins.automation.actions.ActionLoopResume
 import app.aaps.plugins.automation.actions.ActionLoopSuspend
 import app.aaps.plugins.automation.actions.ActionNotification
@@ -22,7 +23,6 @@ import app.aaps.plugins.automation.actions.ActionSendSMS
 import app.aaps.plugins.automation.actions.ActionSetAcceWeight
 import app.aaps.plugins.automation.actions.ActionSetIobTH
 import app.aaps.plugins.automation.actions.ActionSetAutomationState
-import app.aaps.plugins.automation.actions.ActionSettingsExport
 import app.aaps.plugins.automation.actions.ActionStartTempTarget
 import app.aaps.plugins.automation.actions.ActionStopProcessing
 import app.aaps.plugins.automation.actions.ActionStopProfilePercent
@@ -125,7 +125,7 @@ abstract class AutomationModule {
     @ContributesAndroidInjector abstract fun actionInjector(): Action
     @ContributesAndroidInjector abstract fun actionStopProcessingInjector(): ActionStopProcessing
     @ContributesAndroidInjector abstract fun actionLoopDisableInjector(): ActionLoopDisable
-    @ContributesAndroidInjector abstract fun actionLoopEnableInjector(): ActionLoopEnable
+    @ContributesAndroidInjector abstract fun actionLoopEnableInjector(): ActionLoopClosed
     @ContributesAndroidInjector abstract fun actionLoopResumeInjector(): ActionLoopResume
     @ContributesAndroidInjector abstract fun actionLoopSuspendInjector(): ActionLoopSuspend
     @ContributesAndroidInjector abstract fun actionNotificationInjector(): ActionNotification
