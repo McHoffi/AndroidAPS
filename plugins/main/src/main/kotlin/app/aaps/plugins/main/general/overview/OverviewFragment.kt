@@ -1242,8 +1242,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                 )
             )
             binding.infoLayout.sensitivity.text = overViewText.joinToString("\n")
-            binding.infoLayout.sensitivity.visibility = View.GONE
-            binding.infoLayout.variableSensitivity.visibility = View.VISIBLE
+            binding.infoLayout.sensitivity.visibility = View.VISIBLE
+            binding.infoLayout.variableSensitivity.visibility = View.GONE
             if (ratioUsed != 1.0 && ratioUsed != lastAutosensData?.autosensResult?.ratio)
                 okDialogText.add(rh.gs(app.aaps.core.ui.R.string.algorithm_long, ratioUsed * 100))
             okDialogText.add(rh.gs(app.aaps.core.ui.R.string.isf_for_carbs, profileUtil.fromMgdlToUnits(isfForCarbs ?: 0.0, profileFunction.getUnits())))
