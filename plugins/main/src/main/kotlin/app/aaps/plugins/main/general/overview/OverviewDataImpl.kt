@@ -201,7 +201,7 @@ class OverviewDataImpl @Inject constructor(
     override var absoluteBasalGraphSeries: SeriesData = LineGraphSeries<ScaledDataPoint>()
 
     override var temporaryTargetSeries: SeriesData = LineGraphSeries<DataPoint>()
-    override var runningModesSeries: SeriesData = PointsWithLabelGraphSeries< RunningModeDataPoint>()
+    override var runningModesSeries: SeriesData = PointsWithLabelGraphSeries<RunningModeDataPoint>()
     override var maxIAValue = 0.0
     override val actScale = Scale()
     override var activitySeries: SeriesData = FixedLineGraphSeries<ScaledDataPoint>()

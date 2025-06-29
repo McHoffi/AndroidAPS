@@ -364,7 +364,7 @@ class CarbsDialog : DialogFragmentWithDate() {
                     }
                     if (reason == TT.Reason.HYPOGLYCEMIAPLUS) {
 
-                        loop.handleRunningModeChange(newRM = RM.Mode.SUSPENDED_BY_USER, durationInMinutes = T.hours(1).mins().toInt(), action = Action.SUSPEND, source = Sources.LoopDialog, profile = profile)
+                        loop.handleRunningModeChange(newRM = RM.Mode.SUSPENDED_BY_USER, durationInMinutes = T.mins(45).mins().toInt(), action = Action.SUSPEND, source = Sources.LoopDialog, profile = profile)
                         val percent = 50
                         val absolute = profile.getBasal() * 0.5
                         val durationInMinutes = 45

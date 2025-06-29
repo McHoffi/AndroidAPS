@@ -43,7 +43,7 @@
     <color name="ic_actions_refill">#E93057</color>
     <color name="ic_local_activate">#67DFE8</color>
     <color name="ic_local_reset">#E93057</color>
-    <color name="ic_local_save">#67E86A</color>
+    <color name="ic_local_save">#00FF00</color>
 
     <!--    Toggle Buttons-->
     <color name="toggle_button_background">#E0E0E0</color>
@@ -76,8 +76,8 @@
 
     <!--    Loop     -->
     <color name="loopDisconnected">#939393</color>
-    <color name="loopClosed">#00C03E</color>
-    <color name="loopLgs">#800080</color>
+    <color name="loopClosed">#00FF00</color>
+    <color name="loopLgs">#00FF00</color>
     <color name="loopSuspended">#F6CE22</color>
     <color name="loopOpened">#4983D7</color>
     <color name="loopDisabled">#FF1313</color>
@@ -112,7 +112,7 @@
     <color name="notificationLow">#ff827c</color>
 
     <!-- Green Colors -->
-    <color name="notificationInfo">#009705</color>
+    <color name="notificationInfo">#00FF00</color>
 
     <!-- Black and White transparent - glass effect-->
     <color name="black_alpha_10">#1A000000</color>
