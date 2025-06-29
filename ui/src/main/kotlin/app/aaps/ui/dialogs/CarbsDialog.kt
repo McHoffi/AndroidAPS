@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TE
+import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.time.T
@@ -362,7 +363,8 @@ class CarbsDialog : DialogFragmentWithDate() {
                         else               -> TT.Reason.CUSTOM
                     }
                     if (reason == TT.Reason.HYPOGLYCEMIAPLUS) {
-                        loop.suspendLoop(T.hours(1).mins().toInt(), Action.SUSPEND, Sources.LoopDialog, listValues = listOf(ValueWithUnit.Hour(1)))
+
+                        loop.handleRunningModeChange(newRM = RM.Mode.SUSPENDED_BY_USER, durationInMinutes = T.hours(1).mins().toInt(), action = Action.SUSPEND, source = Sources.LoopDialog, profile = profile)
                         val percent = 50
                         val absolute = profile.getBasal() * 0.5
                         val durationInMinutes = 45

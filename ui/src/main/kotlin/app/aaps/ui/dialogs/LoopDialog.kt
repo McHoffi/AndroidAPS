@@ -258,8 +258,7 @@ class LoopDialog : DaggerDialogFragment() {
 
             // mod suspend loop for 30 min (+ dialog_loop.xml)
             R.id.overview_suspend_30m                     -> {
-                loop.suspendLoop(T.mins(30).mins().toInt(), Action.SUSPEND, Sources.LoopDialog, listValues = listOf(ValueWithUnit.Minute(30)))
-                rxBus.send(EventRefreshOverview("suspend_menu"))
+                loop.handleRunningModeChange(newRM = RM.Mode.SUSPENDED_BY_USER, durationInMinutes = T.mins(30).mins().toInt(), action = Action.SUSPEND, source = Sources.LoopDialog, profile = profile)
                 return true
             }
             // end mod
