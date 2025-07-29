@@ -576,7 +576,7 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
         val quickWizardEntry = quickWizard.getActive()
         runOnUiThread {
             _binding ?: return@runOnUiThread
-            if (quickWizardEntry != null && lastBG != null && profile != null && pump.isInitialized() && !loop.runningMode.isSuspended()) {
+            if (quickWizardEntry != null && lastBG != null && profile != null && pump.isInitialized() && loop.runningMode != RM.Mode.DISCONNECTED_PUMP && !pump.isSuspended()) {
                 binding.buttonsLayout.quickWizardButton.visibility = View.VISIBLE
                 val wizard = quickWizardEntry.doCalc(profile, profileName, lastBG)
                 binding.buttonsLayout.quickWizardButton.text = quickWizardEntry.buttonText() + "\n" + rh.gs(app.aaps.core.objects.R.string.format_carbs, quickWizardEntry.carbs()) +
@@ -598,7 +598,9 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             _binding ?: return@runOnUiThread
             if (showAcceptButton && pump.isInitialized() && !loop.runningMode.isSuspended() && (loop as PluginBase).isEnabled()) {
                 binding.buttonsLayout.acceptTempButton.visibility = View.VISIBLE
-                binding.buttonsLayout.acceptTempButton.text = "${rh.gs(R.string.set_basal_question)}\n${lastRun?.constraintsProcessed?.resultAsString()}"
+                if (lastRun != null) {
+                    binding.buttonsLayout.acceptTempButton.text = "${rh.gs(R.string.set_basal_question)}\n${lastRun.constraintsProcessed?.resultAsString()}"
+                }
             } else {
                 binding.buttonsLayout.acceptTempButton.visibility = View.GONE
             }
@@ -606,12 +608,12 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             // **** Various treatment buttons ****
             binding.buttonsLayout.carbsButton.visibility =
                 (profile != null && preferences.get(BooleanKey.OverviewShowCarbsButton)).toVisibility()
-            binding.buttonsLayout.treatmentButton.visibility = (!loop.runningMode.isSuspended() && pump.isInitialized() && profile != null
+            binding.buttonsLayout.treatmentButton.visibility = (loop.runningMode != RM.Mode.DISCONNECTED_PUMP && !pump.isSuspended() && pump.isInitialized() && profile != null
                 && preferences.get(BooleanKey.OverviewShowTreatmentButton)).toVisibility()
-            binding.buttonsLayout.wizardButton.visibility = (!loop.runningMode.isSuspended() && pump.isInitialized() && profile != null
+            binding.buttonsLayout.wizardButton.visibility = (loop.runningMode != RM.Mode.DISCONNECTED_PUMP && !pump.isSuspended() && pump.isInitialized() && profile != null
                 && preferences.get(BooleanKey.OverviewShowWizardButton)).toVisibility()
             binding.buttonsLayout.insulinButton.visibility = (profile != null && preferences.get(BooleanKey.OverviewShowInsulinButton)).toVisibility()
-            if (loop.runningMode.isSuspended() || !pump.isInitialized()) {
+            if (loop.runningMode == RM.Mode.DISCONNECTED_PUMP || pump.isSuspended() || !pump.isInitialized()) {
                 setRibbon(
                     binding.buttonsLayout.insulinButton,
                     app.aaps.core.ui.R.attr.ribbonTextWarningColor,
@@ -710,7 +712,6 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.superbolus)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
-                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     RM.Mode.DISCONNECTED_PUMP -> {
@@ -718,7 +719,6 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.disconnected)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
-                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     RM.Mode.SUSPENDED_BY_PUMP -> {
@@ -733,35 +733,30 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.loopsuspended)
                         binding.infoLayout.apsModeText.text = dateUtil.age(loop.minutesToEndOfSuspend() * 60000L, true, rh)
                         binding.infoLayout.apsModeText.visibility = View.VISIBLE
-                        binding.infoLayout.version.visibility = View.GONE
                     }
 
                     RM.Mode.CLOSED_LOOP_LGS   -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_lgs)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.uel_lgs_loop_mode)
                         binding.infoLayout.apsModeText.visibility = View.GONE
-                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     RM.Mode.CLOSED_LOOP       -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.objects.R.drawable.ic_loop_closed)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.closedloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
-                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     RM.Mode.OPEN_LOOP         -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_open)
                         apsModeSetA11yLabel(app.aaps.core.ui.R.string.openloop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
-                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     RM.Mode.DISABLED_LOOP     -> {
                         binding.infoLayout.apsMode.setImageResource(app.aaps.core.ui.R.drawable.ic_loop_disabled)
                         apsModeSetA11yLabel(R.string.disabled_loop)
                         binding.infoLayout.apsModeText.visibility = View.GONE
-                        binding.infoLayout.version.visibility = View.VISIBLE
                     }
 
                     RM.Mode.RESUME            -> error("Invalid mode")
