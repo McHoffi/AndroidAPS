@@ -25,6 +25,7 @@ import app.aaps.core.interfaces.aps.Loop
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.overview.OverviewMenus
+import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventRefreshOverview
@@ -43,7 +44,8 @@ class OverviewMenusImpl @Inject constructor(
     private val preferences: Preferences,
     private val rxBus: RxBus,
     private val config: Config,
-    private val loop: Loop
+    private val loop: Loop,
+    private val activePlugin: ActivePlugin
 ) : OverviewMenus {
 
     enum class CharTypeData(
@@ -57,11 +59,13 @@ class OverviewMenusImpl @Inject constructor(
     ) {
 
         PRE(R.string.overview_show_predictions, app.aaps.core.ui.R.attr.predictionColor, app.aaps.core.ui.R.attr.menuTextColor, primary = true, secondary = false, shortnameId = R.string.prediction_shortname, enabledByDefault = true),
+        BG_PARAB(R.string.overview_show_bgParabola, app.aaps.core.ui.R.attr.bgParabolaColor, app.aaps.core.ui.R.attr.menuTextColor, primary = true, secondary = false, shortnameId = R.string.bgParabola_shortname, enabledByDefault = true),
         TREAT(R.string.overview_show_treatments, app.aaps.core.ui.R.attr.cobColor, app.aaps.core.ui.R.attr.menuTextColor, primary = true, secondary = false, shortnameId = R.string.treatments_shortname, enabledByDefault = true),
         BAS(R.string.overview_show_basals, app.aaps.core.ui.R.attr.basal, app.aaps.core.ui.R.attr.menuTextColor, primary = true, secondary = false, shortnameId = R.string.basal_shortname, enabledByDefault = true),
         ABS(R.string.overview_show_abs_insulin, app.aaps.core.ui.R.attr.iobColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.abs_insulin_shortname),
         IOB(R.string.overview_show_iob, app.aaps.core.ui.R.attr.iobColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = app.aaps.core.ui.R.string.iob),
         COB(R.string.overview_show_cob, app.aaps.core.ui.R.attr.cobColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = app.aaps.core.ui.R.string.cob),
+        IOB_TH(R.string.overview_show_iobTH, app.aaps.core.ui.R.attr.iobThColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.iob_threshold_shortname),
         DEV(R.string.overview_show_deviations, app.aaps.core.ui.R.attr.bgiColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.deviation_shortname),
         BGI(R.string.overview_show_bgi, app.aaps.core.ui.R.attr.bgiColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.bgi_shortname),
         SEN(R.string.overview_show_sensitivity, app.aaps.core.ui.R.attr.ratioColor, app.aaps.core.ui.R.attr.menuTextColorInverse, primary = false, secondary = true, shortnameId = R.string.sensitivity_shortname),
@@ -70,6 +74,11 @@ class OverviewMenusImpl @Inject constructor(
         DEVSLOPE(R.string.overview_show_deviation_slope, app.aaps.core.ui.R.attr.devSlopePosColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.devslope_shortname),
         HR(R.string.overview_show_heartRate, app.aaps.core.ui.R.attr.heartRateColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.heartRate_shortname),
         STEPS(R.string.overview_show_steps, app.aaps.core.ui.R.attr.stepsColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.steps_shortname),
+        FIN_ISF(R.string.overview_show_final_isf, app.aaps.core.ui.R.attr.finalIsfColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.final_isf_shortname),
+        ACC_ISF(R.string.overview_show_acce_isf, app.aaps.core.ui.R.attr.acceIsfColor, app.aaps.core.ui.R.attr.menuTextColorInverse, primary = false, secondary = true, shortnameId = R.string.acce_isf_shortname),
+        BG_ISF(R.string.overview_show_bg_isf, app.aaps.core.ui.R.attr.bgIsfColor, app.aaps.core.ui.R.attr.menuTextColorInverse, primary = false, secondary = true, shortnameId = R.string.bg_isf_shortname),
+        PP_ISF(R.string.overview_show_pp_isf, app.aaps.core.ui.R.attr.ppIsfColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.pp_isf_shortname),
+        DUR_ISF(R.string.overview_show_dura_isf, app.aaps.core.ui.R.attr.duraIsfColor, app.aaps.core.ui.R.attr.menuTextColor, primary = false, secondary = true, shortnameId = R.string.dura_isf_shortname),
     }
 
     companion object {
@@ -104,9 +113,9 @@ class OverviewMenusImpl @Inject constructor(
                 }
             else
                 listOf(
-                    arrayOf(true, true, true, false, false, false, false, false, false, false, false, false, false, false),
-                    arrayOf(false, false, false, false, true, false, false, false, false, false, false, false, false, false),
-                    arrayOf(false, false, false, false, false, true, false, false, false, false, false, false, false, false)
+                    arrayOf(true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false),
+                    arrayOf(false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false),
+                    arrayOf(false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false)
                 )
 
     @Synchronized
@@ -147,6 +156,8 @@ class OverviewMenusImpl @Inject constructor(
                 config.AAPSCLIENT -> true
                 else              -> false
             }
+            //val runningAutoIsf =  loop.lastRun?.request?.algorithm?.name == "AUTO_ISF"
+            val runningAutoIsf =  activePlugin.activeAPS.algorithm.name == "AUTO_ISF"
             val popup = PopupWindow(v.context)
             popup.setBackgroundDrawable(ColorDrawable(rh.gac(chartButton.context, app.aaps.core.ui.R.attr.popupWindowBackground)))
             val scrollView = ScrollView(v.context)                        // required to be able to scroll menu on low res screen
@@ -163,6 +174,7 @@ class OverviewMenusImpl @Inject constructor(
             CharTypeData.entries.forEach { m ->
                 var insert = true
                 if (m == CharTypeData.PRE) insert = predictionsAvailable
+                else if (m == CharTypeData.BG_PARAB) insert = runningAutoIsf
                 if (insert && m.primary) {
                     createCustomMenuItemView(v.context, m, itemRow, layout, true)
                     itemRow++
@@ -192,6 +204,12 @@ class OverviewMenusImpl @Inject constructor(
             CharTypeData.entries.forEach { m ->
                 var insert = true
                 if (m == CharTypeData.DEVSLOPE) insert = config.isDev()
+                else if (m == CharTypeData.IOB_TH) insert = runningAutoIsf
+                else if (m == CharTypeData.FIN_ISF) insert = runningAutoIsf
+                else if (m == CharTypeData.ACC_ISF) insert = runningAutoIsf
+                else if (m == CharTypeData.BG_ISF) insert = runningAutoIsf
+                else if (m == CharTypeData.PP_ISF) insert = runningAutoIsf
+                else if (m == CharTypeData.DUR_ISF) insert = runningAutoIsf
                 if (insert && m.secondary) {
                     createCustomMenuItemView(v.context, m, itemRow, layout, false)
                     itemRow++

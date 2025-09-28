@@ -267,8 +267,6 @@ class DetermineBasalAutoISF @Inject constructor(
                     // limit sensitivityRatio to profile.autosens_max (1.2x by default)
                     sensitivityRatio = min(sensitivityRatio, resistanceMax)
                     sensitivityRatio = round(sensitivityRatio, 2)
-                    // exercise_ratio = sensitivityRatio
-                    // origin_sens = "from TT modifier"
                 }
                 consoleError.add("Sensitivity ratio set to $sensitivityRatio based on temp target of $target_bg; ")
             } else if ( stepActivityDetected ) {

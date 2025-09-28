@@ -6,11 +6,13 @@ import android.widget.ImageButton
 interface OverviewMenus {
     enum class CharType {
         PRE,
+        BG_PARAB,
         TREAT,
         BAS,
         ABS,
         IOB,
         COB,
+        IOB_TH,
         DEV,
         BGI,
         SEN,
@@ -18,7 +20,12 @@ interface OverviewMenus {
         ACT,
         DEVSLOPE,
         HR,
-        STEPS
+        STEPS,
+        FIN_ISF,
+        ACC_ISF,
+        BG_ISF,
+        PP_ISF,
+        DUR_ISF,
     }
 
     val setting: List<Array<Boolean>>

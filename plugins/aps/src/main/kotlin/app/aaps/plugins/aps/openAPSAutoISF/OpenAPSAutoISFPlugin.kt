@@ -15,6 +15,7 @@ import androidx.preference.SwitchPreference
 import app.aaps.core.data.aps.SMBDefaults
 import app.aaps.core.data.configuration.Constants
 import app.aaps.core.data.model.GlucoseUnit
+import app.aaps.core.data.model.AIV
 import app.aaps.core.data.model.SC
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
@@ -78,9 +79,9 @@ import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
 import app.aaps.plugins.aps.openAPSSMB.StepService
 import dagger.android.HasAndroidInjector
+import org.json.JSONObject
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
-import org.json.JSONObject
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -133,7 +134,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     override var lastAPSResult: DetermineBasalResult? = null
     private var consoleError = mutableListOf<String>()
     private var consoleLog = mutableListOf<String>()
-    val autoIsfVersion = "3.1.0"
+    val autoIsfVersion = "3.2.0"
     val autoIsfWeights; get() = preferences.get(BooleanKey.ApsUseAutoIsfWeights)
     private val autoISF_max; get() = preferences.get(DoubleKey.ApsAutoIsfMax)
     private val autoISF_min; get() = preferences.get(DoubleKey.ApsAutoIsfMin)
@@ -157,6 +158,18 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     val normalTarget = 100
     val calibrationDuration = preferences.get(IntKey.FslCalibrationDuration)
     private val minutesClass; get() = if (preferences.get(IntKey.ApsMaxSmbFrequency) == 1) 6L else 30L  // ga-zelle: later get correct 1 min CGM flag from glucoseStatus ? ... or from apsResults?
+    private val disposable = CompositeDisposable()
+    // create array for key AutoISF results with defaults
+    var autoIsfValues = AIV(
+        timestamp = 0L,
+        acceIsf = 1.0,
+        bgIsf =  1.0,
+        ppIsf = 1.0,
+        driftIsf = 1.0,
+        duraIsf = 1.0,
+        finalIsf = 1.0,
+        iobThEffective = 0.0
+    )
     // Activity detection (steps)
     private val recentSteps5Minutes ; get() = StepService.getRecentStepCount5Min()
     private val recentSteps10Minutes; get() = StepService.getRecentStepCount10Min()
@@ -164,8 +177,6 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     private val recentSteps30Minutes; get() = StepService.getRecentStepCount30Min()
     private val recentSteps60Minutes; get() = StepService.getRecentStepCount60Min()
     private val phone_moved; get() = PhoneMovementDetector.phoneMoved()
-    private val calendar = Calendar.getInstance()
-    private val disposable = CompositeDisposable()
 
     override fun onStart() {
         super.onStart()
@@ -324,6 +335,17 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             maxBg = hardLimits.verifyHardLimits(tempTarget.highTarget, app.aaps.core.ui.R.string.temp_target_high_target, HardLimits.LIMIT_TEMP_MAX_BG[0], HardLimits.LIMIT_TEMP_MAX_BG[1])
             targetBg = hardLimits.verifyHardLimits(tempTarget.target(), app.aaps.core.ui.R.string.temp_target_value, HardLimits.LIMIT_TEMP_TARGET_BG[0], HardLimits.LIMIT_TEMP_TARGET_BG[1])
         }
+        // for key AutoISF results assign defaults
+        autoIsfValues = AIV(
+            timestamp = now,
+            acceIsf = 1.0,
+            bgIsf =  1.0,
+            ppIsf = 1.0,
+            driftIsf = 1.0,
+            duraIsf = 1.0,
+            finalIsf = 1.0,
+            iobThEffective = 0.0
+        )
 
         var autosensResult = AutosensResult()
         var variableSensitivity = profile.getProfileIsfMgdl()
@@ -525,7 +547,11 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             aapsLogger.debug(LTag.APS, "Result: $it")
             rxBus.send(EventAPSCalculationFinished())
         }
-
+        autoIsfValues.timestamp = now
+        aapsLogger.debug(LTag.APS, "autoIsfValues to write contains: $autoIsfValues")
+        disposable += persistenceLayer.insertOrUpdateAutoIsfValues(autoIsfValues).subscribe()
+        val autoIsfRecords = persistenceLayer.getAutoIsfValuesFromTime(now-100000L)
+        aapsLogger.debug(LTag.APS, "autoIsfValues records read contain: $autoIsfRecords")
         rxBus.send(EventOpenAPSUpdateGui())
     }
 
@@ -824,9 +850,11 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 sens_modified = true
             }
         }
+        autoIsfValues.acceIsf = acce_ISF
 
         val bg_ISF = 1 + interpolate(100 - bg_off)
         consoleError.add("bg_ISF adaptation is ${round(bg_ISF, 2)}")
+        autoIsfValues.bgIsf = bg_ISF
         var liftISF: Double
         val final_ISF: Double
         if (bg_ISF < 1.0) {
@@ -861,6 +889,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
 
             }
         }
+        autoIsfValues.ppIsf = pp_ISF
 
         var dura_ISF = 1.0
         val weightISF: Double = dura_ISF_weight
@@ -882,6 +911,8 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 consoleError.add("dura_ISF adaptation is ${round(dura_ISF, 2)} because ISF ${round(sens, 1)} did not do it for ${round(dura05, 1)}m")
             }
         }
+        autoIsfValues.duraIsf = dura_ISF
+
         if (sens_modified) {
             liftISF = max(dura_ISF, max(bg_ISF, max(acce_ISF, pp_ISF)))
             if (acce_ISF < 1.0) {
@@ -1008,6 +1039,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         consoleError.add("----------------------------------")
         consoleError.add("end AutoISF")
         consoleError.add("----------------------------------")
+        autoIsfValues.finalIsf = finalISF
         return finalISF
     }
 
@@ -1030,6 +1062,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         } else {
             consoleLog.add("User setting iobTH=100% disables iobTH method")
         }
+        autoIsfValues.iobThEffective = if (useIobTh) iobThEffective else profile.max_iob
 
         if (!microBolusAllowed) {
             return "AAPS"                                                 // see message in enable_smb
