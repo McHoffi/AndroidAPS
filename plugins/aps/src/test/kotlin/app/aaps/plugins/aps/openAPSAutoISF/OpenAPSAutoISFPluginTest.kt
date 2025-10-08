@@ -2,6 +2,7 @@ package app.aaps.plugins.aps.openAPSAutoISF
 
 import android.icu.util.Calendar
 import app.aaps.core.data.aps.SMBDefaults
+import app.aaps.core.interfaces.aps.GlucoseStatusAutoIsf
 import app.aaps.core.interfaces.aps.OapsProfileAutoIsf
 import app.aaps.core.interfaces.automation.AutomationStateInterface
 import app.aaps.core.interfaces.bgQualityCheck.BgQualityCheck
@@ -38,9 +39,10 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
 
     @BeforeEach fun prepare() {
         openAPSAutoISFPlugin = OpenAPSAutoISFPlugin(
-            injector, aapsLogger, rxBus, constraintChecker, rh, profileFunction, profileUtil, config, activePlugin,
+            aapsLogger, rxBus, constraintChecker, rh, profileFunction, profileUtil, config, activePlugin,
             iobCobCalculator, hardLimits, preferences, dateUtil, processedTbrEbData, persistenceLayer, glucoseStatusProvider,
-            bgQualityCheck, uiInteraction, determineBasalSMB, profiler
+            bgQualityCheck, uiInteraction, determineBasalSMB, profiler,
+            GlucoseStatusCalculatorAutoIsf(aapsLogger, iobCobCalculator, dateUtil, decimalFormatter, deltaCalculator), apsResultProvider
         )
     }
 
@@ -198,7 +200,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             out_units = "mg/dl",
             lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 111.1,
-            autoISF_version = "3.1.0",
+            autoISF_version = "3.2.0",
             enable_autoISF = false,
             autoISF_max = 1.5,
             autoISF_min = 0.7,
@@ -299,7 +301,7 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             out_units = "mg/dl",
             lgsThreshold = profileUtil.convertToMgdlDetect(preferences.get(UnitDoubleKey.ApsLgsThreshold)).toInt(),
             variable_sens = 47.11,
-            autoISF_version = "3.1.0",
+            autoISF_version = "3.2.0",
             enable_autoISF = false,
             autoISF_max = 1.5,
             autoISF_min = 0.7,
@@ -323,11 +325,11 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
             ketoacidosis_protection_iob = 0.0,
             enableSMB_with_COB = true
         )
-        assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11)                             // inactive
+        assertThat(openAPSAutoISFPlugin.autoISF(profile)).isEqualTo(47.11)                             // inactive
         `when`(oapsProfile.enable_autoISF).thenReturn(true)
-        val glucoseStatus = glucoseStatusProvider.glucoseStatusData!!
+        val glucoseStatus = glucoseStatusProvider.glucoseStatusData as GlucoseStatusAutoIsf
         `when`(glucoseStatus.corrSqu).thenReturn(0.4711)
-        assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11)                             // bad parabola
+        assertThat(openAPSAutoISFPlugin.autoISF(profile)).isEqualTo(47.11)                             // bad parabola
         `when`(preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens)).thenReturn(true)
         `when`(preferences.get(UnitDoubleKey.ApsAutoIsfHalfBasalExerciseTarget)).thenReturn(160.0)
         assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11 * 2.0)                       // exercise mode w/o AutoISF
@@ -338,11 +340,11 @@ class OpenAPSAutoISFPluginTest : TestBaseWithProfile() {
         `when`(glucoseStatus.a2).thenReturn(3.0)
         `when`(glucoseStatus.bgAcceleration).thenReturn(2.0 * glucoseStatus.a2)
         `when`(preferences.get(DoubleKey.ApsAutoIsfBgAccelWeight)).thenReturn(2.0)
-        assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11 * 2.0 * 2.0)                 // acce_ISF + exercise mode
+        assertThat(openAPSAutoISFPlugin.autoISF(profile)).isEqualTo(47.11 * 2.0 * 2.0)                 // acce_ISF + exercise mode
         `when`(preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens)).thenReturn(false)
-        assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11 * 2.0)                       // acce_ISF w/o exercise mode
+        assertThat(openAPSAutoISFPlugin.autoISF(profile)).isEqualTo(47.11 * 2.0)                       // acce_ISF w/o exercise mode
         `when`(preferences.get(DoubleKey.ApsAutoIsfLowBgWeight)).thenReturn(2.0)
-        assertThat(openAPSAutoISFPlugin.autoISF(now, profile)).isEqualTo(47.11 * 1.0)                       // bg_ISF strengthened by acce_ISF
+        assertThat(openAPSAutoISFPlugin.autoISF(profile)).isEqualTo(47.11 * 1.0)                       // bg_ISF strengthened by acce_ISF
 
     }
 }

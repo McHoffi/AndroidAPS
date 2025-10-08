@@ -5,23 +5,26 @@ import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.APSResult
 import app.aaps.core.interfaces.nsclient.NSSettingsStatus
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
-import app.aaps.core.interfaces.objects.Instantiator
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.Round
+import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
+import app.aaps.core.keys.interfaces.BooleanPreferenceKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.utils.HtmlHelper
 import app.aaps.plugins.sync.R
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
+import kotlin.text.append
 
 @Singleton
 class ProcessedDeviceStatusDataImpl @Inject constructor(
     private val rh: ResourceHelper,
     private val dateUtil: DateUtil,
     private val preferences: Preferences,
-    private val instantiator: Instantiator
+    private val apsResultProvider: Provider<APSResult>
 ) : ProcessedDeviceStatusData {
 
     override var pumpData: ProcessedDeviceStatusData.PumpData? = null
@@ -108,8 +111,44 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
                 else                                                                                                                        -> ProcessedDeviceStatusData.Levels.INFO
             }
             string.append("<span style=\"color:${level.toColor()}\">")
-            if (openAPSData.clockSuggested != 0L) string.append(dateUtil.minAgo(rh, openAPSData.clockSuggested)).append(" ")
+            if (openAPSData.clockSuggested != 0L) string.append(dateUtil.minOrSecAgo(rh, openAPSData.clockSuggested)).append(" ")
             string.append("</span>") // color
+            return HtmlHelper.fromHtml(string.toString())
+        }
+
+    override val aisfStatus: Spanned
+        get() {
+            val string = StringBuilder()
+                .append("<span style=\"color:${rh.gac(app.aaps.core.ui.R.attr.nsTitleColor)}\">")
+                .append(rh.gs(R.string.script_debug_short))
+                .append(": </span>")
+
+            // test warning level
+            val level = when {
+                openAPSData.clockSuggested + T.mins(preferences.get(IntKey.NsClientUrgentAlarmStaleData).toLong()).msecs() < dateUtil.now() -> ProcessedDeviceStatusData.Levels.URGENT
+
+                openAPSData.clockSuggested + T.mins(preferences.get(IntKey.NsClientAlarmStaleData).toLong()).msecs() < dateUtil.now()       -> ProcessedDeviceStatusData.Levels.WARN
+                else                                                                                                                        -> ProcessedDeviceStatusData.Levels.INFO
+            }
+            string.append("<span style=\"color:${level.toColor()}\">")
+            var activeAlgorithm = getAPSResult()?.algorithm?.name.toString()
+            if ( activeAlgorithm == "SMB" && preferences.get(BooleanKey.ApsUseDynamicSensitivity)) { activeAlgorithm = "DynISF" }
+            string.append( activeAlgorithm)
+            //if (openAPSData.clockSuggested != 0L) string.append(dateUtil.minAgo(rh, openAPSData.clockSuggested)).append(" ")
+            string.append("</span>") // color
+            return HtmlHelper.fromHtml(string.toString())
+        }
+
+    override val extendedAisfStatus: Spanned
+        get() {
+            val debugInfo = getAPSResult()?.scriptDebug
+            if (debugInfo.isNullOrEmpty()) {
+                return HtmlHelper.fromHtml("")
+            }
+            val string = StringBuilder()
+            debugInfo.forEach { line ->
+                string.append(line).append("<br>")
+            }
             return HtmlHelper.fromHtml(string.toString())
         }
 
@@ -117,7 +156,7 @@ class ProcessedDeviceStatusDataImpl @Inject constructor(
         get() = if (openAPSData.clockSuggested != 0L) openAPSData.clockSuggested else -1
 
     override fun getAPSResult(): APSResult? =
-        openAPSData.suggested?.let { instantiator.provideAPSResultObject(it) }
+        openAPSData.suggested?.let { apsResultProvider.get().with(it) }
 
     override val uploaderStatus: String
         get() {
