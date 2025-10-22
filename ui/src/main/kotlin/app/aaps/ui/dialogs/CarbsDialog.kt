@@ -48,7 +48,6 @@ import app.aaps.core.utils.HtmlHelper
 import app.aaps.ui.R
 import app.aaps.ui.databinding.DialogCarbsBinding
 import com.google.common.base.Joiner
-import dagger.android.HasAndroidInjector
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import java.text.DecimalFormat
@@ -76,7 +75,6 @@ class CarbsDialog : DialogFragmentWithDate() {
     @Inject lateinit var protectionCheck: ProtectionCheck
     @Inject lateinit var uiInteraction: UiInteraction
     @Inject lateinit var decimalFormatter: DecimalFormatter
-    @Inject lateinit var injector: HasAndroidInjector
 
     private var queryingProtection = false
     private val disposable = CompositeDisposable()
