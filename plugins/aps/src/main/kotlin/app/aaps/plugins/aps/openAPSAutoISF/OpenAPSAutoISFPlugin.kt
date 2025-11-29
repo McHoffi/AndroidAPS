@@ -3,12 +3,10 @@ package app.aaps.plugins.aps.openAPSAutoISF
 import app.aaps.core.interfaces.automation.AutomationStateInterface
 import android.content.Context
 import android.content.Intent
+import androidx.collection.LongSparseArray
+import androidx.collection.forEach
 import android.icu.util.Calendar
-import android.net.Uri
-import android.util.LongSparseArray
 import androidx.core.net.toUri
-import androidx.core.util.forEach
-import androidx.core.util.size
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -276,7 +274,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
             // can default to 0, e.g. for the first 2-3 loops in a virgin setup
             aapsLogger.debug("calculateVariableIsf CALC ${dateUtil.dateAndTimeAndSecondsString(timestamp)} $sensitivity")
             autoIsfCache.put(key, sensitivity)
-            if (autoIsfCache.size > 1000) autoIsfCache.clear()
+            if (autoIsfCache.size() > 1000) autoIsfCache.clear()
         }
         // this return is mandatory, otherwise it messed up the AutoISF algo.
         return Pair("OFF", null)

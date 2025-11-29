@@ -2,12 +2,10 @@ package app.aaps.plugins.aps.openAPSSMB
 
 import android.content.Context
 import android.content.Intent
+import androidx.collection.LongSparseArray
+import androidx.collection.forEach
 import android.icu.util.Calendar
-import android.net.Uri
-import android.util.LongSparseArray
 import androidx.core.net.toUri
-import androidx.core.util.forEach
-import androidx.core.util.size
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -249,7 +247,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
         // no cached result found, let's calculate the value
         //aapsLogger.debug("calculateVariableIsf $caller CAL ${dateUtil.dateAndTimeAndSecondsString(timestamp)} $sensitivity")
         dynIsfCache.put(key, dynIsfResult.variableSensitivity)
-        if (dynIsfCache.size > 1000) dynIsfCache.clear()
+        if (dynIsfCache.size() > 1000) dynIsfCache.clear()
         return Pair("CALC", dynIsfResult.variableSensitivity)
     }
 
