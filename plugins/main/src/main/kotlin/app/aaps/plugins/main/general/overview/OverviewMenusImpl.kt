@@ -99,26 +99,17 @@ class OverviewMenusImpl @Inject constructor(
                 false
             }
 
-    /**
     init {
-       CharTypeData.PRE.visibility = {
-           when {
-               config.APS        -> loop.lastRun?.request?.hasPredictions == true
-               config.AAPSCLIENT -> true
-               else              -> false
-           }
-       }
-       //CharTypeData.DEVSLOPE.visibility = { config.isDev() }
-       //CharTypeData.BG_PARAB.visibility = { runningAutoIsf }
-       //CharTypeData.IOB_TH.visibility = { masterAutoIsf }
-       //CharTypeData.VAR_SENS.visibility = { preferences.get(BooleanKey.ApsUseDynamicSensitivity) || runningAutoIsf }
-       //CharTypeData.FIN_ISF.visibility = { masterAutoIsf }
-       //CharTypeData.ACC_ISF.visibility = {masterAutoIsf }
-       //CharTypeData.BG_ISF.visibility = { masterAutoIsf }
-       //CharTypeData.PP_ISF.visibility = { masterAutoIsf }
-       //CharTypeData.DUR_ISF.visibility = { masterAutoIsf }
-     }
-    **/
+        CharTypeData.PRE.visibility = {
+            when {
+                config.APS        -> loop.lastRun?.request?.hasPredictions == true
+                config.AAPSCLIENT -> true
+                else              -> false
+            }
+        }
+        CharTypeData.DEVSLOPE.visibility = { config.isDev() }
+        CharTypeData.VAR_SENS.visibility = { preferences.get(BooleanKey.ApsUseDynamicSensitivity) || (preferences.get(BooleanKey.ApsUseAutoIsfWeights) && config.isDev()) }
+    }
 
     companion object {
 
